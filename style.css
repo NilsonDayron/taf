@@ -1,8 +1,6 @@
-/* ==================== ESTILO BASE ==================== */
 * {
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
 body {
@@ -13,7 +11,7 @@ body {
   justify-content: center;
   background: linear-gradient(180deg, #fafafa, #f0f0f0);
   color: #111;
-  overflow: hidden; /* evita rolagem durante gestos */
+  overflow: hidden;
 }
 
 .tela {
@@ -21,8 +19,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 90%;
-  max-width: 400px;
+  width: 100%;
+  height: 100%;
   text-align: center;
 }
 
@@ -31,14 +29,12 @@ body {
 }
 
 h1 {
-  font-size: 2.4rem;
-  font-weight: 600;
+  font-size: 2.2rem;
   margin-bottom: 10px;
 }
 
 .sub {
   color: #777;
-  font-size: 1rem;
   margin-bottom: 20px;
 }
 
@@ -47,100 +43,37 @@ h1 {
   gap: 20px;
 }
 
-/* ==================== BOTÕES PADRÃO ==================== */
 .btn {
-  background: #f9f9f9;
+  background: #fff;
   border: 1px solid #ccc;
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 12px 24px;
   font-size: 1rem;
-  transition: all 0.2s;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.btn:active {
-  transform: scale(0.97);
-}
-
-/* ==================== CARTÃO CENTRAL ==================== */
 .timer-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(15px);
-  padding: 30px 20px;
-  border-radius: 20px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  width: 100%;
-  max-width: 320px;
-  transition: all 0.3s ease;
-}
-
-.cronometro-icon {
-  width: 70px;
-  opacity: 0.8;
-  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
 }
 
 #tempoDisplay {
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   font-weight: 600;
-  margin: 10px 0;
-  letter-spacing: 1px;
+  margin-bottom: 10px;
 }
 
-.subinfo {
+.instrucao {
+  color: #555;
   font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 25px;
+  line-height: 1.4rem;
 }
 
-/* ==================== BOTÕES DE AÇÃO ==================== */
-.botao-area {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.action-btn {
-  border: none;
-  border-radius: 12px;
-  padding: 14px;
-  font-size: 1rem;
-  color: #fff;
-  font-weight: 600;
-  transition: all 0.3s;
-  cursor: pointer;
-}
-
-.iniciar {
-  background: #4caf50;
-}
-
-.pausar {
-  background: #ff9800;
-}
-
-.parar {
-  background: #f44336;
-}
-
-.action-btn:active {
-  opacity: 0.85;
-  transform: scale(0.98);
-}
-
-/* ==================== RESULTADO ==================== */
-.resultado-tempo {
-  font-size: 2rem;
-  margin: 10px 0;
-}
-
-.resultado-distancia {
-  color: #444;
-  font-size: 1.1rem;
-}
-
-/* ==================== POPUP DE FEEDBACK (GESTOS) ==================== */
+/* Popup central */
 .popup-acao {
   position: fixed;
   top: 50%;
@@ -148,8 +81,8 @@ h1 {
   transform: translate(-50%, -50%) scale(0.9);
   background: rgba(0, 0, 0, 0.75);
   color: #fff;
-  font-size: 1.2rem;
-  padding: 14px 24px;
+  font-size: 1.3rem;
+  padding: 14px 28px;
   border-radius: 20px;
   opacity: 0;
   transition: all 0.3s ease;
@@ -161,26 +94,20 @@ h1 {
   transform: translate(-50%, -50%) scale(1);
 }
 
-/* ==================== EFEITO DE SETAS (DURANTE ARRASTE) ==================== */
+/* Indicador de gesto tipo Apple Watch */
 .gesto-seta {
   position: fixed;
   top: 50%;
   left: 50%;
   font-size: 3rem;
-  color: rgba(0, 0, 0, 0.3);
+  color: rgba(0,0,0,0.25);
   transform: translate(-50%, -50%) scale(0.9);
   opacity: 0;
-  transition: all 0.2s ease;
-  z-index: 10000;
-  user-select: none;
+  transition: all 0.15s ease;
+  z-index: 9999;
 }
 
 .gesto-seta.visivel {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
-}
-
-/* ==================== ESCONDER BARRA DE ROLAGEM EM MOBILE ==================== */
-::-webkit-scrollbar {
-  display: none;
 }

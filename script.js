@@ -1,70 +1,55 @@
-// =================== VARIÁVEIS ===================
+// ===== VARIÁVEIS =====
 const telaInicial = document.getElementById("tela-inicial");
 const telaCronometro = document.getElementById("tela-cronometro");
 const telaResultado = document.getElementById("tela-resultado");
-
 const btnHomem = document.getElementById("btnHomem");
 const btnMulher = document.getElementById("btnMulher");
-const iniciar = document.getElementById("iniciar");
-const pausar = document.getElementById("pausar");
-const parar = document.getElementById("parar");
 const novoTeste = document.getElementById("novoTeste");
-
 const tempoDisplay = document.getElementById("tempoDisplay");
 const resultadoTempo = document.getElementById("resultado-tempo");
-const resultadoDistancia = document.getElementById("resultado-distancia");
 
 let tempoDecorrido = 0;
-let intervalo = null;
-let inicio = 0;
 let rodando = false;
+let inicio = 0;
+let intervalo = null;
+const tempoLimite = (14 * 60 + 30) * 1000; // 14m30s
 
-// Limite de 14m30s (em milissegundos)
-const tempoLimite = (14 * 60 + 30) * 1000;
-
-// =================== TROCAR DE TELA ===================
+// ===== TROCAR DE TELA =====
 function mudarTela(atual, proxima) {
   atual.classList.remove("ativa");
   proxima.classList.add("ativa");
 }
 
-// =================== FORMATAR TEMPO COMPLETO ===================
+btnHomem.onclick = () => mudarTela(telaInicial, telaCronometro);
+btnMulher.onclick = () => mudarTela(telaInicial, telaCronometro);
+novoTeste.onclick = () => location.reload();
+
+// ===== FORMATAR TEMPO =====
 function formatarTempo(ms) {
-  const horas = Math.floor(ms / 3600000);
-  const minutos = Math.floor((ms % 3600000) / 60000);
-  const segundos = Math.floor((ms % 60000) / 1000);
-  const milissegundos = Math.floor((ms % 1000) / 10); // duas casas
-
-  return `${horas.toString().padStart(2, "0")}:${minutos
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  const cs = Math.floor((ms % 1000) / 10);
+  return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${s
     .toString()
-    .padStart(2, "0")}:${segundos.toString().padStart(2, "0")}.${milissegundos
-    .toString()
-    .padStart(2, "0")}`;
+    .padStart(2,"0")}.${cs.toString().padStart(2,"0")}`;
 }
 
-// =================== ATUALIZAR DISPLAY ===================
-function atualizarDisplay() {
-  tempoDisplay.textContent = formatarTempo(tempoDecorrido);
-}
-
-// =================== CRONÔMETRO ===================
+// ===== CRONÔMETRO =====
 function iniciarCronometro() {
   if (rodando) return;
   rodando = true;
   inicio = Date.now() - tempoDecorrido;
-
   intervalo = setInterval(() => {
     tempoDecorrido = Date.now() - inicio;
-    atualizarDisplay();
-
-    // Quando atingir 14m30s
+    tempoDisplay.textContent = formatarTempo(tempoDecorrido);
     if (tempoDecorrido >= tempoLimite) {
-      navigator.vibrate?.([200, 100, 200, 100, 200]);
       clearInterval(intervalo);
       rodando = false;
+      navigator.vibrate?.([200,100,200]);
       alert("⏱️ Tempo limite de 14m30s atingido!");
     }
-  }, 10); // Atualiza a cada 10ms
+  }, 10);
 }
 
 function pausarCronometro() {
@@ -77,76 +62,58 @@ function pararCronometro() {
   clearInterval(intervalo);
   rodando = false;
   resultadoTempo.textContent = formatarTempo(tempoDecorrido);
-  resultadoDistancia.textContent = "Distância: (em breve)";
   mudarTela(telaCronometro, telaResultado);
 }
 
-// =================== BOTÕES ===================
-btnHomem.onclick = () => mudarTela(telaInicial, telaCronometro);
-btnMulher.onclick = () => mudarTela(telaInicial, telaCronometro);
-iniciar.onclick = iniciarCronometro;
-pausar.onclick = pausarCronometro;
-parar.onclick = pararCronometro;
-novoTeste.onclick = () => location.reload();
-
-// =================== CONTROLE POR GESTOS ===================
-let startX = 0;
-let startY = 0;
-let endX = 0;
-let endY = 0;
-
+// ===== GESTOS =====
+let startX = 0, startY = 0, endX = 0, endY = 0;
 const areaGestos = document.getElementById("tela-cronometro");
+const seta = document.createElement("div");
+seta.className = "gesto-seta";
+document.body.appendChild(seta);
 
-areaGestos.addEventListener(
-  "touchstart",
-  (e) => {
-    const toque = e.touches[0];
-    startX = toque.clientX;
-    startY = toque.clientY;
-  },
-  { passive: false }
-);
+areaGestos.addEventListener("touchstart", e => {
+  const t = e.touches[0];
+  startX = endX = t.clientX;
+  startY = endY = t.clientY;
+  seta.textContent = "";
+  seta.classList.remove("visivel");
+}, { passive: false });
 
-areaGestos.addEventListener(
-  "touchmove",
-  (e) => {
-    e.preventDefault(); // Evita rolagem
-    const toque = e.touches[0];
-    endX = toque.clientX;
-    endY = toque.clientY;
-  },
-  { passive: false }
-);
+areaGestos.addEventListener("touchmove", e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  endX = t.clientX;
+  endY = t.clientY;
+  const dx = endX - startX;
+  const dy = endY - startY;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    seta.textContent = dx > 20 ? "➡️" : dx < -20 ? "⬅️" : "";
+  } else {
+    seta.textContent = dy < -20 ? "⬆️" : "";
+  }
+  if (seta.textContent) seta.classList.add("visivel");
+}, { passive: false });
 
 areaGestos.addEventListener("touchend", () => {
-  const diffX = endX - startX;
-  const diffY = endY - startY;
-
-  // Detecta direção predominante
-  if (Math.abs(diffX) > Math.abs(diffY)) {
-    if (diffX > 50) {
-      iniciarCronometro();
-      animarAcao("Iniciar");
-    } else if (diffX < -50) {
-      pausarCronometro();
-      animarAcao("Pausar");
-    }
+  const dx = endX - startX;
+  const dy = endY - startY;
+  seta.classList.remove("visivel");
+  if (Math.abs(dx) > Math.abs(dy)) {
+    if (dx > 50) { iniciarCronometro(); feedback("Iniciar"); }
+    else if (dx < -50) { pausarCronometro(); feedback("Pausar"); }
   } else {
-    if (diffY < -50) {
-      pararCronometro();
-      animarAcao("Parar");
-    }
+    if (dy < -50) { pararCronometro(); feedback("Parar"); }
   }
 });
 
-// =================== ANIMAÇÃO DE FEEDBACK ===================
-function animarAcao(texto) {
-  const popup = document.createElement("div");
-  popup.textContent = texto;
-  popup.className = "popup-acao";
-  document.body.appendChild(popup);
-
-  setTimeout(() => popup.classList.add("visivel"), 10);
-  setTimeout(() => popup.classList.remove("visivel"), 1000);
-  setTimeout(() => popup.remove(), 1300);
+// ===== FEEDBACK VISUAL =====
+function feedback(texto) {
+  const div = document.createElement("div");
+  div.className = "popup-acao";
+  div.textContent = texto;
+  document.body.appendChild(div);
+  setTimeout(() => div.classList.add("visivel"), 10);
+  setTimeout(() => div.classList.remove("visivel"), 1000);
+  setTimeout(() => div.remove(), 1300);
 }
