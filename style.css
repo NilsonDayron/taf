@@ -1,3 +1,4 @@
+/* ==================== ESTILO BASE ==================== */
 * {
   box-sizing: border-box;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
@@ -12,6 +13,7 @@ body {
   justify-content: center;
   background: linear-gradient(180deg, #fafafa, #f0f0f0);
   color: #111;
+  overflow: hidden; /* evita rolagem durante gestos */
 }
 
 .tela {
@@ -45,6 +47,7 @@ h1 {
   gap: 20px;
 }
 
+/* ==================== BOTÕES PADRÃO ==================== */
 .btn {
   background: #f9f9f9;
   border: 1px solid #ccc;
@@ -60,13 +63,16 @@ h1 {
   transform: scale(0.97);
 }
 
+/* ==================== CARTÃO CENTRAL ==================== */
 .timer-card {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(15px);
   padding: 30px 20px;
   border-radius: 20px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   width: 100%;
   max-width: 320px;
+  transition: all 0.3s ease;
 }
 
 .cronometro-icon {
@@ -76,9 +82,10 @@ h1 {
 }
 
 #tempoDisplay {
-  font-size: 3rem;
+  font-size: 2.5rem;
   font-weight: 600;
   margin: 10px 0;
+  letter-spacing: 1px;
 }
 
 .subinfo {
@@ -87,6 +94,7 @@ h1 {
   margin-bottom: 25px;
 }
 
+/* ==================== BOTÕES DE AÇÃO ==================== */
 .botao-area {
   display: flex;
   flex-direction: column;
@@ -121,6 +129,7 @@ h1 {
   transform: scale(0.98);
 }
 
+/* ==================== RESULTADO ==================== */
 .resultado-tempo {
   font-size: 2rem;
   margin: 10px 0;
@@ -131,13 +140,13 @@ h1 {
   font-size: 1.1rem;
 }
 
-/* ===== ANIMAÇÃO VISUAL DE AÇÃO (SWIPE) ===== */
+/* ==================== POPUP DE FEEDBACK (GESTOS) ==================== */
 .popup-acao {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.9);
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.75);
   color: #fff;
   font-size: 1.2rem;
   padding: 14px 24px;
@@ -150,4 +159,28 @@ h1 {
 .popup-acao.visivel {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
+}
+
+/* ==================== EFEITO DE SETAS (DURANTE ARRASTE) ==================== */
+.gesto-seta {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  font-size: 3rem;
+  color: rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -50%) scale(0.9);
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 10000;
+  user-select: none;
+}
+
+.gesto-seta.visivel {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ==================== ESCONDER BARRA DE ROLAGEM EM MOBILE ==================== */
+::-webkit-scrollbar {
+  display: none;
 }

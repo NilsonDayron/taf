@@ -1,3 +1,4 @@
+// =================== VARIÁVEIS ===================
 const telaInicial = document.getElementById("tela-inicial");
 const telaCronometro = document.getElementById("tela-cronometro");
 const telaResultado = document.getElementById("tela-resultado");
@@ -21,13 +22,13 @@ let rodando = false;
 // Limite de 14m30s (em milissegundos)
 const tempoLimite = (14 * 60 + 30) * 1000;
 
-// === TROCAR DE TELA ===
+// =================== TROCAR DE TELA ===================
 function mudarTela(atual, proxima) {
   atual.classList.remove("ativa");
   proxima.classList.add("ativa");
 }
 
-// === FORMATAR TEMPO COMPLETO ===
+// =================== FORMATAR TEMPO COMPLETO ===================
 function formatarTempo(ms) {
   const horas = Math.floor(ms / 3600000);
   const minutos = Math.floor((ms % 3600000) / 60000);
@@ -41,12 +42,12 @@ function formatarTempo(ms) {
     .padStart(2, "0")}`;
 }
 
-// === ATUALIZAR DISPLAY ===
+// =================== ATUALIZAR DISPLAY ===================
 function atualizarDisplay() {
   tempoDisplay.textContent = formatarTempo(tempoDecorrido);
 }
 
-// === INICIAR CRONÔMETRO ===
+// =================== CRONÔMETRO ===================
 function iniciarCronometro() {
   if (rodando) return;
   rodando = true;
@@ -56,6 +57,7 @@ function iniciarCronometro() {
     tempoDecorrido = Date.now() - inicio;
     atualizarDisplay();
 
+    // Quando atingir 14m30s
     if (tempoDecorrido >= tempoLimite) {
       navigator.vibrate?.([200, 100, 200, 100, 200]);
       clearInterval(intervalo);
@@ -65,14 +67,12 @@ function iniciarCronometro() {
   }, 10); // Atualiza a cada 10ms
 }
 
-// === PAUSAR CRONÔMETRO ===
 function pausarCronometro() {
   if (!rodando) return;
   rodando = false;
   clearInterval(intervalo);
 }
 
-// === PARAR CRONÔMETRO ===
 function pararCronometro() {
   clearInterval(intervalo);
   rodando = false;
@@ -81,111 +81,15 @@ function pararCronometro() {
   mudarTela(telaCronometro, telaResultado);
 }
 
-// === BOTÕES ===
+// =================== BOTÕES ===================
 btnHomem.onclick = () => mudarTela(telaInicial, telaCronometro);
 btnMulher.onclick = () => mudarTela(telaInicial, telaCronometro);
 iniciar.onclick = iniciarCronometro;
 pausar.onclick = pausarCronometro;
 parar.onclick = pararCronometro;
 novoTeste.onclick = () => location.reload();
-// === CONTROLE POR GESTOS (TOQUE E ARRASTE) ===
-let startX = 0;
-let startY = 0;
 
-const areaGestos = document.getElementById("tela-cronometro");
-
-areaGestos.addEventListener("touchstart", (e) => {
-  const toque = e.touches[0];
-  startX = toque.clientX;
-  startY = toque.clientY;
-});
-
-areaGestos.addEventListener("touchend", (e) => {
-  const toque = e.changedTouches[0];
-  const diffX = toque.clientX - startX;
-  const diffY = toque.clientY - startY;
-
-  // Verifica direção predominante do gesto
-  if (Math.abs(diffX) > Math.abs(diffY)) {
-    if (diffX > 50) {
-      // → arrastar para a direita
-      iniciarCronometro();
-      animarAcao("Iniciar");
-    } else if (diffX < -50) {
-      // ← arrastar para a esquerda
-      pausarCronometro();
-      animarAcao("Pausar");
-    }
-  } else {
-    if (diffY < -50) {
-      // ↑ arrastar para cima
-      pararCronometro();
-      animarAcao("Parar");
-    }
-  }
-});
-
-// Pequena animação e feedback visual
-function animarAcao(texto) {
-  const popup = document.createElement("div");
-  popup.textContent = texto;
-  popup.className = "popup-acao";
-  document.body.appendChild(popup);
-
-  setTimeout(() => popup.classList.add("visivel"), 10);
-  setTimeout(() => popup.classList.remove("visivel"), 1000);
-  setTimeout(() => popup.remove(), 1300);
-}
-// === CONTROLE POR GESTOS (TOQUE E ARRASTE) ===
-let startX = 0;
-let startY = 0;
-
-const areaGestos = document.getElementById("tela-cronometro");
-
-areaGestos.addEventListener("touchstart", (e) => {
-  const toque = e.touches[0];
-  startX = toque.clientX;
-  startY = toque.clientY;
-});
-
-areaGestos.addEventListener("touchend", (e) => {
-  const toque = e.changedTouches[0];
-  const diffX = toque.clientX - startX;
-  const diffY = toque.clientY - startY;
-
-  // Verifica direção predominante do gesto
-  if (Math.abs(diffX) > Math.abs(diffY)) {
-    if (diffX > 50) {
-      // → arrastar para a direita
-      iniciarCronometro();
-      animarAcao("Iniciar");
-    } else if (diffX < -50) {
-      // ← arrastar para a esquerda
-      pausarCronometro();
-      animarAcao("Pausar");
-    }
-  } else {
-    if (diffY < -50) {
-      // ↑ arrastar para cima
-      pararCronometro();
-      animarAcao("Parar");
-    }
-  }
-});
-
-// Pequena animação e feedback visual
-function animarAcao(texto) {
-  const popup = document.createElement("div");
-  popup.textContent = texto;
-  popup.className = "popup-acao";
-  document.body.appendChild(popup);
-
-  setTimeout(() => popup.classList.add("visivel"), 10);
-  setTimeout(() => popup.classList.remove("visivel"), 1000);
-  setTimeout(() => popup.remove(), 1300);
-}
-
-// === CONTROLE POR GESTOS (TOQUE E ARRASTE) ===
+// =================== CONTROLE POR GESTOS ===================
 let startX = 0;
 let startY = 0;
 let endX = 0;
@@ -206,8 +110,7 @@ areaGestos.addEventListener(
 areaGestos.addEventListener(
   "touchmove",
   (e) => {
-    // Evita que o navegador role a tela
-    e.preventDefault();
+    e.preventDefault(); // Evita rolagem
     const toque = e.touches[0];
     endX = toque.clientX;
     endY = toque.clientY;
@@ -215,11 +118,11 @@ areaGestos.addEventListener(
   { passive: false }
 );
 
-areaGestos.addEventListener("touchend", (e) => {
+areaGestos.addEventListener("touchend", () => {
   const diffX = endX - startX;
   const diffY = endY - startY;
 
-  // Verifica direção predominante
+  // Detecta direção predominante
   if (Math.abs(diffX) > Math.abs(diffY)) {
     if (diffX > 50) {
       iniciarCronometro();
@@ -236,7 +139,7 @@ areaGestos.addEventListener("touchend", (e) => {
   }
 });
 
-// Pequena animação e feedback visual
+// =================== ANIMAÇÃO DE FEEDBACK ===================
 function animarAcao(texto) {
   const popup = document.createElement("div");
   popup.textContent = texto;
