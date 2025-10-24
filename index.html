@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TAF - Teste de Aptidão Física</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Tela inicial -->
+  <section id="tela-inicial" class="tela ativa">
+    <h1>TAF</h1>
+    <p class="sub">Selecione seu perfil</p>
+    <div class="botoes">
+      <button class="btn" id="btnHomem">Homem</button>
+      <button class="btn" id="btnMulher">Mulher</button>
+    </div>
+  </section>
+
+  <!-- Tela do cronômetro -->
+  <section id="tela-cronometro" class="tela">
+    <h1>TAF</h1>
+    <img src="https://cdn-icons-png.flaticon.com/512/61/61459.png" alt="cronometro" class="cronometro-icon">
+    <p id="tempoDisplay">00:00</p>
+    <p id="subinfo"></p>
+    <div class="setas">
+      <div class="seta" id="iniciar">👉 Iniciar</div>
+      <div class="seta" id="pausar">👉 Pausar</div>
+      <div class="seta" id="parar">👉 Parar</div>
+    </div>
+  </section>
+
+  <!-- Tela de resultado -->
+  <section id="tela-resultado" class="tela">
+    <h1>TAF</h1>
+    <img src="https://cdn-icons-png.flaticon.com/512/61/61459.png" alt="cronometro" class="cronometro-icon">
+    <p id="resultado-tempo">--:--</p>
+    <p id="resultado-distancia">Calculando distância...</p>
+    <button id="novoTeste" class="btn">Novo Teste</button>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
