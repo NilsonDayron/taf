@@ -1,4 +1,3 @@
-// ======= VARIÁVEIS =======
 const telaInicial = document.getElementById('tela-inicial');
 const telaCronometro = document.getElementById('tela-cronometro');
 const telaResultado = document.getElementById('tela-resultado');
@@ -16,50 +15,46 @@ const resultadoDistancia = document.getElementById('resultado-distancia');
 
 let tempo = 0;
 let intervalo = null;
-let tempoLimite = 14 * 60 + 30; // 14min30s padrão
-let startTime, running = false;
+let tempoLimite = 14 * 60 + 30; // 14m30s padrão
+let running = false;
 
-// ======= FUNÇÕES =======
-
+// === MUDAR DE TELA ===
 function mudarTela(atual, proxima) {
   atual.classList.remove('ativa');
   proxima.classList.add('ativa');
 }
 
-btnHomem.onclick = () => {
-  tempoLimite = 14 * 60 + 30;
-  mudarTela(telaInicial, telaCronometro);
-  alert('🚫 Mantenha a tela ligada durante o teste para medir o tempo e a distância corretamente!');
+// === FORMATAR TEMPO ===
+function formatarTempo(segundos) {
+  const m = Math.floor(segundos / 60).toString().padStart(2, '0');
+  const s = (segundos % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
 }
 
-btnMulher.onclick = () => {
-  tempoLimite = 15 * 60; // exemplo
-  mudarTela(telaInicial, telaCronometro);
-  alert('🚫 Mantenha a tela ligada durante o teste para medir o tempo e a distância corretamente!');
-}
-
+// === ATUALIZAR DISPLAY ===
 function atualizarDisplay() {
-  const min = Math.floor(tempo / 60).toString().padStart(2, '0');
-  const seg = (tempo % 60).toString().padStart(2, '0');
-  tempoDisplay.textContent = `${min}:${seg}`;
+  tempoDisplay.textContent = formatarTempo(tempo);
 }
 
+// === CRONÔMETRO ===
 function iniciarCronometro() {
   if (running) return;
   running = true;
-  startTime = Date.now() - tempo * 1000;
+  const start = Date.now() - tempo * 1000;
+
   intervalo = setInterval(() => {
-    tempo = Math.floor((Date.now() - startTime) / 1000);
+    tempo = Math.floor((Date.now() - start) / 1000);
     atualizarDisplay();
 
+    // Quando atingir 14m30s
     if (tempo === tempoLimite) {
-      navigator.vibrate?.([400, 200, 400]);
+      navigator.vibrate?.([300, 200, 300, 200, 300]);
+      alert("⏱️ Tempo limite atingido: 14m30s");
     }
   }, 1000);
 }
 
 function pausarCronometro() {
-  if (!running) return;
   running = false;
   clearInterval(intervalo);
 }
@@ -67,13 +62,14 @@ function pausarCronometro() {
 function pararCronometro() {
   clearInterval(intervalo);
   running = false;
-  resultadoTempo.textContent = tempoDisplay.textContent;
-  resultadoDistancia.textContent = "Distância: (calculando...)";
+  resultadoTempo.textContent = formatarTempo(tempo);
+  resultadoDistancia.textContent = "Distância: (em breve)";
   mudarTela(telaCronometro, telaResultado);
 }
 
-iniciar.addEventListener('click', iniciarCronometro);
-pausar.addEventListener('click', pausarCronometro);
-parar.addEventListener('click', pararCronometro);
-
+btnHomem.onclick = () => mudarTela(telaInicial, telaCronometro);
+btnMulher.onclick = () => mudarTela(telaInicial, telaCronometro);
+iniciar.onclick = iniciarCronometro;
+pausar.onclick = pausarCronometro;
+parar.onclick = pararCronometro;
 novoTeste.onclick = () => location.reload();

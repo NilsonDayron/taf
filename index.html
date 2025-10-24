@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TAF - Teste de Aptidão Física</title>
   <link rel="stylesheet" href="style.css">
@@ -21,23 +21,27 @@
   <!-- Tela do cronômetro -->
   <section id="tela-cronometro" class="tela">
     <h1>TAF</h1>
-    <img src="https://cdn-icons-png.flaticon.com/512/61/61459.png" alt="cronometro" class="cronometro-icon">
-    <p id="tempoDisplay">00:00</p>
-    <p id="subinfo"></p>
-    <div class="setas">
-      <div class="seta" id="iniciar">👉 Iniciar</div>
-      <div class="seta" id="pausar">👉 Pausar</div>
-      <div class="seta" id="parar">👉 Parar</div>
+    <div class="timer-card">
+      <img src="https://cdn-icons-png.flaticon.com/512/61/61459.png" alt="cronômetro" class="cronometro-icon">
+      <p id="tempoDisplay">00:00</p>
+      <p id="subinfo" class="subinfo">Limite: 14:30</p>
+      <div class="botao-area">
+        <button id="iniciar" class="action-btn iniciar">Iniciar</button>
+        <button id="pausar" class="action-btn pausar">Pausar</button>
+        <button id="parar" class="action-btn parar">Parar</button>
+      </div>
     </div>
   </section>
 
   <!-- Tela de resultado -->
   <section id="tela-resultado" class="tela">
-    <h1>TAF</h1>
-    <img src="https://cdn-icons-png.flaticon.com/512/61/61459.png" alt="cronometro" class="cronometro-icon">
-    <p id="resultado-tempo">--:--</p>
-    <p id="resultado-distancia">Calculando distância...</p>
-    <button id="novoTeste" class="btn">Novo Teste</button>
+    <h1>Resultado</h1>
+    <div class="timer-card">
+      <img src="https://cdn-icons-png.flaticon.com/512/61/61459.png" alt="cronômetro" class="cronometro-icon">
+      <p id="resultado-tempo" class="resultado-tempo">--:--</p>
+      <p id="resultado-distancia" class="resultado-distancia">Distância: -- km</p>
+      <button id="novoTeste" class="btn">Novo Teste</button>
+    </div>
   </section>
 
   <script src="script.js"></script>

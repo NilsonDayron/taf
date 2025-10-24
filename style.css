@@ -1,16 +1,16 @@
 * {
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
 body {
   margin: 0;
-  background: linear-gradient(to bottom, #fefae0, #e9edc9);
-  color: #333;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  background: linear-gradient(180deg, #fafafa, #f0f0f0);
+  color: #111;
 }
 
 .tela {
@@ -18,14 +18,9 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
   width: 90%;
   max-width: 400px;
-  border: 2px solid #333;
-  border-radius: 15px;
-  padding: 20px;
-  background: #fff;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  text-align: center;
 }
 
 .tela.ativa {
@@ -33,57 +28,104 @@ body {
 }
 
 h1 {
+  font-size: 2.4rem;
+  font-weight: 600;
   margin-bottom: 10px;
-  font-size: 2.2em;
 }
 
 .sub {
-  margin-bottom: 15px;
-  font-size: 1em;
-  color: #666;
+  color: #777;
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+.botoes {
+  display: flex;
+  gap: 20px;
 }
 
 .btn {
-  background: #fefae0;
-  border: 2px solid #999;
-  border-radius: 10px;
-  padding: 10px 20px;
-  margin: 10px;
-  font-size: 1em;
+  background: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  transition: all 0.2s;
   cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.timer-card {
+  background: #fff;
+  padding: 30px 20px;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  width: 100%;
+  max-width: 320px;
 }
 
 .cronometro-icon {
-  width: 80px;
+  width: 70px;
+  opacity: 0.8;
+  margin-bottom: 10px;
+}
+
+#tempoDisplay {
+  font-size: 3rem;
+  font-weight: 600;
   margin: 10px 0;
 }
 
-.setas {
+.subinfo {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 25px;
+}
+
+.botao-area {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  gap: 10px;
 }
 
-.seta {
-  margin: 10px 0;
-  padding: 10px 15px;
-  border: 2px solid #999;
-  border-radius: 10px;
-  background: #fefae0;
-  font-weight: 500;
-  cursor: pointer;
-  position: relative;
-  user-select: none;
-}
-
-.seta::after {
-  content: '➡️';
-  position: absolute;
-  right: -25px;
-  top: 5px;
-}
-
-#setaAtiva {
-  background: #d4a373;
+.action-btn {
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 1rem;
   color: #fff;
+  font-weight: 600;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.iniciar {
+  background: #4caf50;
+}
+
+.pausar {
+  background: #ff9800;
+}
+
+.parar {
+  background: #f44336;
+}
+
+.action-btn:active {
+  opacity: 0.85;
+  transform: scale(0.98);
+}
+
+.resultado-tempo {
+  font-size: 2rem;
+  margin: 10px 0;
+}
+
+.resultado-distancia {
+  color: #444;
+  font-size: 1.1rem;
 }
