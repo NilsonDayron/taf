@@ -88,3 +88,99 @@ iniciar.onclick = iniciarCronometro;
 pausar.onclick = pausarCronometro;
 parar.onclick = pararCronometro;
 novoTeste.onclick = () => location.reload();
+// === CONTROLE POR GESTOS (TOQUE E ARRASTE) ===
+let startX = 0;
+let startY = 0;
+
+const areaGestos = document.getElementById("tela-cronometro");
+
+areaGestos.addEventListener("touchstart", (e) => {
+  const toque = e.touches[0];
+  startX = toque.clientX;
+  startY = toque.clientY;
+});
+
+areaGestos.addEventListener("touchend", (e) => {
+  const toque = e.changedTouches[0];
+  const diffX = toque.clientX - startX;
+  const diffY = toque.clientY - startY;
+
+  // Verifica direção predominante do gesto
+  if (Math.abs(diffX) > Math.abs(diffY)) {
+    if (diffX > 50) {
+      // → arrastar para a direita
+      iniciarCronometro();
+      animarAcao("Iniciar");
+    } else if (diffX < -50) {
+      // ← arrastar para a esquerda
+      pausarCronometro();
+      animarAcao("Pausar");
+    }
+  } else {
+    if (diffY < -50) {
+      // ↑ arrastar para cima
+      pararCronometro();
+      animarAcao("Parar");
+    }
+  }
+});
+
+// Pequena animação e feedback visual
+function animarAcao(texto) {
+  const popup = document.createElement("div");
+  popup.textContent = texto;
+  popup.className = "popup-acao";
+  document.body.appendChild(popup);
+
+  setTimeout(() => popup.classList.add("visivel"), 10);
+  setTimeout(() => popup.classList.remove("visivel"), 1000);
+  setTimeout(() => popup.remove(), 1300);
+}
+// === CONTROLE POR GESTOS (TOQUE E ARRASTE) ===
+let startX = 0;
+let startY = 0;
+
+const areaGestos = document.getElementById("tela-cronometro");
+
+areaGestos.addEventListener("touchstart", (e) => {
+  const toque = e.touches[0];
+  startX = toque.clientX;
+  startY = toque.clientY;
+});
+
+areaGestos.addEventListener("touchend", (e) => {
+  const toque = e.changedTouches[0];
+  const diffX = toque.clientX - startX;
+  const diffY = toque.clientY - startY;
+
+  // Verifica direção predominante do gesto
+  if (Math.abs(diffX) > Math.abs(diffY)) {
+    if (diffX > 50) {
+      // → arrastar para a direita
+      iniciarCronometro();
+      animarAcao("Iniciar");
+    } else if (diffX < -50) {
+      // ← arrastar para a esquerda
+      pausarCronometro();
+      animarAcao("Pausar");
+    }
+  } else {
+    if (diffY < -50) {
+      // ↑ arrastar para cima
+      pararCronometro();
+      animarAcao("Parar");
+    }
+  }
+});
+
+// Pequena animação e feedback visual
+function animarAcao(texto) {
+  const popup = document.createElement("div");
+  popup.textContent = texto;
+  popup.className = "popup-acao";
+  document.body.appendChild(popup);
+
+  setTimeout(() => popup.classList.add("visivel"), 10);
+  setTimeout(() => popup.classList.remove("visivel"), 1000);
+  setTimeout(() => popup.remove(), 1300);
+}
