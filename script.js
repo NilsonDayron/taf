@@ -184,3 +184,66 @@ function animarAcao(texto) {
   setTimeout(() => popup.classList.remove("visivel"), 1000);
   setTimeout(() => popup.remove(), 1300);
 }
+
+// === CONTROLE POR GESTOS (TOQUE E ARRASTE) ===
+let startX = 0;
+let startY = 0;
+let endX = 0;
+let endY = 0;
+
+const areaGestos = document.getElementById("tela-cronometro");
+
+areaGestos.addEventListener(
+  "touchstart",
+  (e) => {
+    const toque = e.touches[0];
+    startX = toque.clientX;
+    startY = toque.clientY;
+  },
+  { passive: false }
+);
+
+areaGestos.addEventListener(
+  "touchmove",
+  (e) => {
+    // Evita que o navegador role a tela
+    e.preventDefault();
+    const toque = e.touches[0];
+    endX = toque.clientX;
+    endY = toque.clientY;
+  },
+  { passive: false }
+);
+
+areaGestos.addEventListener("touchend", (e) => {
+  const diffX = endX - startX;
+  const diffY = endY - startY;
+
+  // Verifica direção predominante
+  if (Math.abs(diffX) > Math.abs(diffY)) {
+    if (diffX > 50) {
+      iniciarCronometro();
+      animarAcao("Iniciar");
+    } else if (diffX < -50) {
+      pausarCronometro();
+      animarAcao("Pausar");
+    }
+  } else {
+    if (diffY < -50) {
+      pararCronometro();
+      animarAcao("Parar");
+    }
+  }
+});
+
+// Pequena animação e feedback visual
+function animarAcao(texto) {
+  const popup = document.createElement("div");
+  popup.textContent = texto;
+  popup.className = "popup-acao";
+  document.body.appendChild(popup);
+
+  setTimeout(() => popup.classList.add("visivel"), 10);
+  setTimeout(() => popup.classList.remove("visivel"), 1000);
+  setTimeout(() => popup.remove(), 1300);
+}
