@@ -13,60 +13,75 @@ const tempoDisplay = document.getElementById('tempoDisplay');
 const resultadoTempo = document.getElementById('resultado-tempo');
 const resultadoDistancia = document.getElementById('resultado-distancia');
 
-let tempo = 0;
+let tempoDecorrido = 0;
 let intervalo = null;
-let tempoLimite = 14 * 60 + 30; // 14m30s padrão
-let running = false;
+let inicio = 0;
+let rodando = false;
 
-// === MUDAR DE TELA ===
+// Limite de 14m30s (em milissegundos)
+const tempoLimite = (14 * 60 + 30) * 1000;
+
+// === TROCAR DE TELA ===
 function mudarTela(atual, proxima) {
   atual.classList.remove('ativa');
   proxima.classList.add('ativa');
 }
 
-// === FORMATAR TEMPO ===
-function formatarTempo(segundos) {
-  const m = Math.floor(segundos / 60).toString().padStart(2, '0');
-  const s = (segundos % 60).toString().padStart(2, '0');
-  return `${m}:${s}`;
+// === FORMATAR TEMPO COMPLETO ===
+function formatarTempo(ms) {
+  const horas = Math.floor(ms / 3600000);
+  const minutos = Math.floor((ms % 3600000) / 60000);
+  const segundos = Math.floor((ms % 60000) / 1000);
+  const milissegundos = Math.floor((ms % 1000) / 10); // duas casas
+
+  return `${horas.toString().padStart(2, '0')}:${minutos
+    .toString()
+    .padStart(2, '0')}:${segundos.toString().padStart(2, '0')}.${milissegundos
+    .toString()
+    .padStart(2, '0')}`;
 }
 
 // === ATUALIZAR DISPLAY ===
 function atualizarDisplay() {
-  tempoDisplay.textContent = formatarTempo(tempo);
+  tempoDisplay.textContent = formatarTempo(tempoDecorrido);
 }
 
-// === CRONÔMETRO ===
+// === INICIAR CRONÔMETRO ===
 function iniciarCronometro() {
-  if (running) return;
-  running = true;
-  const start = Date.now() - tempo * 1000;
+  if (rodando) return;
+  rodando = true;
+  inicio = Date.now() - tempoDecorrido;
 
   intervalo = setInterval(() => {
-    tempo = Math.floor((Date.now() - start) / 1000);
+    tempoDecorrido = Date.now() - inicio;
     atualizarDisplay();
 
-    // Quando atingir 14m30s
-    if (tempo === tempoLimite) {
-      navigator.vibrate?.([300, 200, 300, 200, 300]);
-      alert("⏱️ Tempo limite atingido: 14m30s");
+    if (tempoDecorrido >= tempoLimite) {
+      navigator.vibrate?.([200, 100, 200, 100, 200]);
+      clearInterval(intervalo);
+      rodando = false;
+      alert('⏱️ Tempo limite de 14m30s atingido!');
     }
-  }, 1000);
+  }, 10); // Atualiza a cada 10ms
 }
 
+// === PAUSAR CRONÔMETRO ===
 function pausarCronometro() {
-  running = false;
+  if (!rodando) return;
+  rodando = false;
   clearInterval(intervalo);
 }
 
+// === PARAR CRONÔMETRO ===
 function pararCronometro() {
   clearInterval(intervalo);
-  running = false;
-  resultadoTempo.textContent = formatarTempo(tempo);
+  rodando = false;
+  resultadoTempo.textContent = formatarTempo(tempoDecorrido);
   resultadoDistancia.textContent = "Distância: (em breve)";
   mudarTela(telaCronometro, telaResultado);
 }
 
+// === BOTÕES ===
 btnHomem.onclick = () => mudarTela(telaInicial, telaCronometro);
 btnMulher.onclick = () => mudarTela(telaInicial, telaCronometro);
 iniciar.onclick = iniciarCronometro;
