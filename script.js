@@ -1,17 +1,17 @@
-const telaInicial = document.getElementById('tela-inicial');
-const telaCronometro = document.getElementById('tela-cronometro');
-const telaResultado = document.getElementById('tela-resultado');
+const telaInicial = document.getElementById("tela-inicial");
+const telaCronometro = document.getElementById("tela-cronometro");
+const telaResultado = document.getElementById("tela-resultado");
 
-const btnHomem = document.getElementById('btnHomem');
-const btnMulher = document.getElementById('btnMulher');
-const iniciar = document.getElementById('iniciar');
-const pausar = document.getElementById('pausar');
-const parar = document.getElementById('parar');
-const novoTeste = document.getElementById('novoTeste');
+const btnHomem = document.getElementById("btnHomem");
+const btnMulher = document.getElementById("btnMulher");
+const iniciar = document.getElementById("iniciar");
+const pausar = document.getElementById("pausar");
+const parar = document.getElementById("parar");
+const novoTeste = document.getElementById("novoTeste");
 
-const tempoDisplay = document.getElementById('tempoDisplay');
-const resultadoTempo = document.getElementById('resultado-tempo');
-const resultadoDistancia = document.getElementById('resultado-distancia');
+const tempoDisplay = document.getElementById("tempoDisplay");
+const resultadoTempo = document.getElementById("resultado-tempo");
+const resultadoDistancia = document.getElementById("resultado-distancia");
 
 let tempoDecorrido = 0;
 let intervalo = null;
@@ -23,8 +23,8 @@ const tempoLimite = (14 * 60 + 30) * 1000;
 
 // === TROCAR DE TELA ===
 function mudarTela(atual, proxima) {
-  atual.classList.remove('ativa');
-  proxima.classList.add('ativa');
+  atual.classList.remove("ativa");
+  proxima.classList.add("ativa");
 }
 
 // === FORMATAR TEMPO COMPLETO ===
@@ -34,11 +34,11 @@ function formatarTempo(ms) {
   const segundos = Math.floor((ms % 60000) / 1000);
   const milissegundos = Math.floor((ms % 1000) / 10); // duas casas
 
-  return `${horas.toString().padStart(2, '0')}:${minutos
+  return `${horas.toString().padStart(2, "0")}:${minutos
     .toString()
-    .padStart(2, '0')}:${segundos.toString().padStart(2, '0')}.${milissegundos
+    .padStart(2, "0")}:${segundos.toString().padStart(2, "0")}.${milissegundos
     .toString()
-    .padStart(2, '0')}`;
+    .padStart(2, "0")}`;
 }
 
 // === ATUALIZAR DISPLAY ===
@@ -60,7 +60,7 @@ function iniciarCronometro() {
       navigator.vibrate?.([200, 100, 200, 100, 200]);
       clearInterval(intervalo);
       rodando = false;
-      alert('⏱️ Tempo limite de 14m30s atingido!');
+      alert("⏱️ Tempo limite de 14m30s atingido!");
     }
   }, 10); // Atualiza a cada 10ms
 }
