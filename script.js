@@ -247,20 +247,41 @@ document.addEventListener('DOMContentLoaded', () => {
       }, { once: true });
     };
 
-    const onPointerUpOrCancel = (e) => {
-      if (!dragging) return;
-      dragging = false;
-      slider.classList.remove('dragging');
-      slider.releasePointerCapture(e.pointerId);
+const onPointerUpOrCancel = (e) => {
+  if (!dragging) return;
+  dragging = false;
+  slider.classList.remove('dragging');
+  slider.releasePointerCapture(e.pointerId);
 
-      const max = MAX_X();
-      const pct = max === 0 ? 0 : x / max;
-      if (pct >= 0.9) {
-        snapForwardAndTrigger();
-      } else {
-        snapBack();
-      }
-    };
+  const max = MAX_X();
+  const pct = max === 0 ? 0 : x / max;
+
+  if (pct >= 0.9) {
+    // 1) Dispara a ação imediatamente (sem depender de transitionend)
+    triggerAction(slider.dataset.btn);
+
+    // 2) Faz um snap rápido até o fim só para feedback visual
+    handle.style.transition = 'transform .14s cubic-bezier(.2,.8,.2,1)';
+    handle.style.transform  = `translate3d(${max}px,0,0)`;
+    label.style.opacity = '1';
+
+    // 3) Volta suavemente o knob depois de um pequeno delay
+    setTimeout(() => {
+      handle.style.transition = 'transform .16s cubic-bezier(.2,.8,.2,1)';
+      handle.style.transform  = 'translate3d(0,0,0)';
+      setTimeout(() => {
+        handle.style.transition = 'none';
+      }, 180);
+    }, 140);
+  } else {
+    // Volta para o início
+    handle.style.transition = 'transform .16s cubic-bezier(.2,.8,.2,1)';
+    handle.style.transform  = 'translate3d(0,0,0)';
+    label.style.opacity = '1';
+    setTimeout(() => { handle.style.transition = 'none'; }, 180);
+  }
+};
+
 
     // Pointer Events: um só código para mouse + toque (iOS/Android/Desktop)
     slider.addEventListener('pointerdown', onPointerDown);
