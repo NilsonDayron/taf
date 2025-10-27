@@ -248,3 +248,6 @@ body {
   /* 20px original + área segura do iOS + ajuste extra (mude 80px à vontade) */
   padding-bottom: calc(20px + env(safe-area-inset-bottom) + 80px);
 }
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
