@@ -1,172 +1,192 @@
 /* --- RESET BÁSICO --- */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-body, html {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #e9e9e9; /* Fundo cinza claro, como no Figma */
-    color: #333;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+/* Mantém altura total e fundo branco (evita “tela cinza”) */
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #ffffff; /* branco */
+  color: #333;
 }
 
 /* --- CONTAINER DO APP --- */
 .app-container {
-    width: 100%;
-    max-width: 450px; /* Limita a largura em desktops */
-    height: 100vh;
-    background-color: #FFFFFF;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    position: relative;
-    overflow: hidden; /* Esconde as páginas que saem da tela */
+  width: 100%;
+  max-width: 480px;              /* largura “iPhone” em desktop */
+  min-height: 100vh;             /* garante altura total visível */
+  margin: 0 auto;                /* centraliza horizontal no desktop */
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  position: relative;
+  overflow: hidden;              /* páginas fora da tela ficam ocultas */
 }
 
 /* --- LÓGICA DAS PÁGINAS (SPA) --- */
 .page {
-    width: 100%;
-    height: 100%;
-    padding: 30px;
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    
-    /* Animação de transição */
-    transition: transform 0.3s ease-in-out;
-    transform: translateX(100%); /* Começa fora da tela */
+  width: 100%;
+  height: 100%;
+  padding: 30px;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  /* transição/entrada lateral */
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(100%); /* começa fora da tela */
+  background:#fff;             /* garante fundo branco em cada página */
+  z-index: 1;
 }
+
 .page.active {
-    transform: translateX(0); /* Entra na tela */
+  transform: translateX(0);    /* entra na tela */
 }
-/* A primeira página (Home) já começa na tela */
+
+/* Primeira tela começa visível */
 #page-home {
-    transform: translateX(0);
+  transform: translateX(0);
 }
 
 /* --- TELA 1: HOME --- */
+#page-home {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  /* centraliza verticalmente */
+  align-items: center;
+  gap: 28px;
+}
+
 #page-home h1 {
-    font-size: 48px;
-    margin-top: 40%;
-    margin-bottom: 50px;
+  font-size: 48px;
+  font-weight: 700;
+  color: #000;
 }
+
 .home-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
 }
+
 .choice-button {
-    font-size: 18px;
-    font-weight: 500;
-    color: white;
-    padding: 15px 40px;
-    border: none;
-    border-radius: 30px;
-    cursor: pointer;
-    transition: transform 0.2s;
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.12s ease;
 }
-.choice-button:active {
-    transform: scale(0.95);
-}
-#btn-homem {
-    background-color: #007AFF; /* Azul */
-}
-#btn-mulher {
-    background-color: #FF2D55; /* Vermelho/Rosa */
-}
+
+.choice-button:active { transform: scale(0.97); }
+#btn-homem { background-color: #007AFF; } /* Azul */
+#btn-mulher { background-color: #FF2D55; } /* Rosa/Vermelho */
 
 /* --- TELA 2 & 3: MAIN (CRONÔMETRO) --- */
 .page-title {
-    font-size: 34px;
-    font-weight: 600;
-    margin-bottom: 10px;
+  font-size: 34px;
+  font-weight: 700;
+  margin-bottom: 8px;
 }
+
 .goal-text {
-    font-size: 16px;
-    color: #555;
-    margin-bottom: 30px;
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 22px;
+  text-align: center;
 }
+
 .timer-display {
-    font-size: 72px; /* Fonte gigante */
-    font-weight: 700;
-    color: #000;
-    margin-bottom: 15px;
-    font-variant-numeric: tabular-nums; /* Impede os números de "pularem" */
+  font-size: 64px;          /* grande e estável */
+  font-weight: 800;
+  color: #000;
+  margin-bottom: 12px;
+  font-variant-numeric: tabular-nums;
 }
+
 .snapshot-display {
-    font-size: 18px;
-    font-weight: 500;
-    color: #333;
-    min-height: 25px; /* Reserva espaço */
-    margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  min-height: 24px;
+  margin-bottom: 14px;
+  text-align: center;
 }
+
 .instructions {
-    font-size: 14px;
-    color: #888;
-    margin-bottom: 30px;
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
 /* --- BOTÕES DE CONTROLE (SLIDE) --- */
 .controls-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    margin-top: auto; /* Empurra os botões para baixo */
-    padding-bottom: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;         /* empurra para a base */
+  padding-bottom: 20px;
 }
+
 .control-button {
-    width: 85%;
-    height: 60px;
-    border-radius: 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    font-size: 18px;
-    font-weight: 600;
-    cursor: grab;
-    user-select: none; /* Impede selecionar o texto ao arrastar */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    
-    /* Escondidos por padrão, JS vai mostrar */
-    display: none; 
+  width: 88%;
+  height: 56px;
+  border-radius: 999px;
+  display: none;            /* o JS revela o botão correto */
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  cursor: grab;
+  user-select: none;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
 }
-.control-button:active {
-    cursor: grabbing;
-}
-/* Cores do seu design */
-.control-button.green { background-color: #34C759; }
-.control-button.yellow { background-color: #FFC107; }
-.control-button.red { background-color: #FF3B30; }
-.control-button.gray { background-color: #8E8E93; }
+
+.control-button:active { cursor: grabbing; }
+
+/* Cores do design */
+.control-button.green  { background-color: #34C759; }
+.control-button.yellow { background-color: #FFC107; color:#1a1a1a; }
+.control-button.red    { background-color: #FF3B30; }
+.control-button.gray   { background-color: #8E8E93; }
 
 /* --- TELA 4: DETALHES --- */
 #percurso-placeholder {
-    width: 100%;
-    height: 60%;
-    border: 2px dashed #CCC;
-    border-radius: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 30px;
-    color: #AAA;
+  width: 100%;
+  height: 60%;
+  border: 2px dashed #CCC;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  color: #AAA;
+  text-align: center;
+  padding: 10px;
 }
+
 .back-button {
-    margin-top: auto;
-    padding-bottom: 20px;
-    font-size: 16px;
-    color: #007AFF;
-    background: none;
-    border: none;
-    cursor: pointer;
+  margin-top: auto;
+  padding: 12px 10px 22px;
+  font-size: 16px;
+  color: #007AFF;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
