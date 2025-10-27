@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   btnHomem.addEventListener('click', () => showPage('page-main'));
   btnMulher.addEventListener('click', () => showPage('page-main'));
-  btnBack.addEventListener('click', () => showPage('page-main'));
+  btnBack.addEventListener('click',  () => showPage('page-main'));
 
   /* ===== Estado dos botões ===== */
   function updateButtonState(newState) {
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (wakeLock) { wakeLock.release(); wakeLock = null; }
   }
 
-  /* ===== Sliders com .slide-handle ===== */
+  /* ===== Sliders SUAVES com Pointer Events + rAF ===== */
   function initSliders() {
     document.querySelectorAll('.control-button').forEach(attachSliderBehavior);
   }
@@ -172,54 +172,128 @@ document.addEventListener('DOMContentLoaded', () => {
   function attachSliderBehavior(slider) {
     const handle = slider.querySelector('.slide-handle');
     const label  = slider.querySelector('.slide-text');
-    const PADDING = 4;   // igual ao CSS
-    const HANDLE_W = 48; // igual ao CSS
 
-    let startX = 0;
-    let currentX = 0;
+    const PADDING = 4;            // igual ao CSS
+    const HANDLE_W = 48;          // igual ao CSS
+    const MAX_X = () => slider.clientWidth - HANDLE_W - PADDING * 2;
+
     let dragging = false;
+    let startX = 0;               // posição do ponteiro no início
+    let baseX  = 0;               // posição acumulada do knob
+    let targetX = 0;              // alvo de movimento (clamp)
+    let rafId = null;             // id do requestAnimationFrame
+    let needsFrame = false;       // evita múltiplos rAF por frame
 
-    const maxX = () => slider.clientWidth - HANDLE_W - PADDING * 2;
-    const setX = x => { handle.style.transform = `translateX(${x}px)`; };
+    // aplica transform via GPU
+    const setX = (x) => { handle.style.transform = `translate3d(${x}px,0,0)`; };
 
-    const start = x => { dragging = true; startX = x - currentX; slider.classList.add('dragging'); };
-    const move  = x => {
-      if (!dragging) return;
-      let nx = x - startX;
-      if (nx < 0) nx = 0;
-      if (nx > maxX()) nx = maxX();
-      currentX = nx;
-      setX(currentX);
+    const onPointerDown = (e) => {
+      // apenas botão primário / toques
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
 
-      // sutil: faz o texto “revelar” um pouco conforme avança
-      const pct = currentX / maxX();
-      label.style.opacity = String(0.9 + 0.1 * (1 - pct));
+      dragging = true;
+      slider.classList.add('dragging');
+
+      // Captura o ponteiro para receber os moves mesmo fora do elemento
+      slider.setPointerCapture(e.pointerId);
+
+      startX = e.clientX;
+      // baseX é onde o knob estava antes de começar este drag
+      // (se estava no meio, continua do meio)
+      // Para ler a posição atual, podemos inferir de targetX
+      // (garantindo consistência nas reentrâncias)
+      baseX = targetX;
+
+      e.preventDefault(); // bloqueia seleção/scroll fantasma
     };
-    const end   = () => {
-      if (!dragging) return;
-      dragging = false;
-      slider.classList.remove('dragging');
 
-      const pct = currentX / maxX();
-      if (pct > 0.9) {
-        triggerAction(slider.dataset.btn);
-        setTimeout(() => resetSlider(slider), 200);
-      } else {
-        resetSlider(slider);
+    const onPointerMove = (e) => {
+      if (!dragging) return;
+      e.preventDefault(); // bloqueia scroll vertical no iOS
+
+      const delta = e.clientX - startX;
+      let next = baseX + delta;
+      if (next < 0) next = 0;
+      const max = MAX_X();
+      if (next > max) next = max;
+      targetX = next;
+
+      // agenda um frame de atualização
+      if (!needsFrame) {
+        needsFrame = true;
+        rafId = requestAnimationFrame(applyDragFrame);
       }
     };
 
-    // toque
-    slider.addEventListener('touchstart', e => start(e.touches[0].clientX), { passive: true });
-    slider.addEventListener('touchmove',  e => move(e.touches[0].clientX),  { passive: true });
-    slider.addEventListener('touchend',   end, { passive: true });
+    const applyDragFrame = () => {
+      needsFrame = false;
+      setX(targetX);
 
-    // mouse (teste no desktop)
-    slider.addEventListener('mousedown', e => start(e.clientX));
-    window.addEventListener('mousemove', e => move(e.clientX));
-    window.addEventListener('mouseup',   end);
+      // efeito sutil no texto (opcional e barato)
+      const pct = MAX_X() === 0 ? 0 : (targetX / MAX_X());
+      label.style.opacity = String(0.9 + 0.1 * (1 - pct));
+    };
 
-    slider._reset = () => { currentX = 0; setX(0); label.style.opacity = '1'; };
+    const snapBack = () => {
+      handle.style.transition = 'transform .18s ease';
+      setX(0);
+      label.style.opacity = '1';
+      // limpa estados
+      targetX = 0;
+      baseX = 0;
+      // remove a transição após finalizar (para o próximo drag ficar instantâneo)
+      handle.addEventListener('transitionend', () => {
+        handle.style.transition = 'none';
+      }, { once: true });
+    };
+
+    const snapForwardAndTrigger = () => {
+      const max = MAX_X();
+      handle.style.transition = 'transform .16s ease';
+      setX(max);
+      label.style.opacity = '1';
+
+      handle.addEventListener('transitionend', () => {
+        handle.style.transition = 'none';
+        // chama ação e retorna o knob
+        triggerAction(slider.dataset.btn);
+        setTimeout(() => snapBack(), 180);
+      }, { once: true });
+    };
+
+    const onPointerUpOrCancel = (e) => {
+      if (!dragging) return;
+      dragging = false;
+      slider.classList.remove('dragging');
+      slider.releasePointerCapture(e.pointerId);
+
+      // decide se acionou (>= 90%)
+      const max = MAX_X();
+      const pct = max === 0 ? 0 : (targetX / max);
+      if (pct >= 0.9) {
+        snapForwardAndTrigger();
+      } else {
+        snapBack();
+      }
+    };
+
+    // Bind de Pointer Events (um só código para mouse + toque)
+    slider.addEventListener('pointerdown', onPointerDown);
+    slider.addEventListener('pointermove', onPointerMove);
+    slider.addEventListener('pointerup', onPointerUpOrCancel);
+    slider.addEventListener('pointercancel', onPointerUpOrCancel);
+
+    // API de reset usada no “reiniciar”
+    slider._reset = () => {
+      cancelAnimationFrame(rafId);
+      dragging = false;
+      targetX = 0;
+      baseX = 0;
+      handle.style.transition = 'none';
+      setX(0);
+      label.style.opacity = '1';
+      slider.classList.remove('dragging');
+    };
   }
 
   function resetSlider(slider) { slider?._reset && slider._reset(); }
