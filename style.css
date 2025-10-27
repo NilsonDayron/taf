@@ -242,3 +242,9 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .slide-text { animation: none; background-size: 100% 100%; }
 }
+
+/* iPhone/Safari: levantar o "deslize para iniciar" acima da barra */
+.controls-container{
+  /* 20px original + área segura do iOS + ajuste extra (mude 80px à vontade) */
+  padding-bottom: calc(20px + env(safe-area-inset-bottom) + 80px);
+}
