@@ -1,157 +1,244 @@
 /* --- RESET BÁSICO --- */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { height: 100%; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Mantém altura total e fundo branco (evita “tela cinza”) */
+html, body {
+  height: 100%;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background:#fff; color:#333;
+  background-color: #ffffff; /* branco */
+  color: #333;
 }
 
 /* --- CONTAINER DO APP --- */
-.app-container{
-  width:100%; max-width:480px; min-height:100vh; margin:0 auto;
-  background:#fff; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,.08);
-  position:relative; overflow:hidden;
+.app-container {
+  width: 100%;
+  max-width: 480px;              /* largura “iPhone” em desktop */
+  min-height: 100vh;             /* garante altura total visível */
+  margin: 0 auto;                /* centraliza horizontal no desktop */
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  position: relative;
+  overflow: hidden;              /* páginas fora da tela ficam ocultas */
 }
 
-/* --- PÁGINAS --- */
-.page{
-  position:absolute; inset:0; width:100%; height:100%;
-  padding:30px; display:flex; flex-direction:column; align-items:center; background:#fff;
-  transform:translateX(100%); transition:transform .3s ease-in-out; z-index:1;
-}
-.page.active{ transform:translateX(0); }
-#page-home{ transform:translateX(0); }
+/* --- LÓGICA DAS PÁGINAS (SPA) --- */
+.page {
+  width: 100%;
+  height: 100%;
+  padding: 30px;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
-/* --- HOME --- */
-#page-home{ display:flex; flex-direction:column; justify-content:center; align-items:center; gap:28px; }
-#page-home h1{ font-size:48px; font-weight:700; color:#000; }
-.home-buttons{ display:flex; gap:18px; }
-.choice-button{
-  font-size:18px; font-weight:600; color:#fff; padding:14px 28px; border:none; border-radius:999px;
-  cursor:pointer; transition:transform .12s ease;
-}
-.choice-button:active{ transform:scale(.97); }
-#btn-homem{ background:#007AFF; }  /* azul */
-#btn-mulher{ background:#FF2D55; } /* rosa */
-
-/* --- MAIN --- */
-.page-title{ font-size:34px; font-weight:700; margin-bottom:8px; }
-.goal-text{ font-size:15px; color:#555; margin-bottom:22px; text-align:center; }
-.timer-display{ font-size:64px; font-weight:800; color:#000; margin-bottom:12px; font-variant-numeric:tabular-nums; }
-.snapshot-display{ font-size:18px; font-weight:600; color:#333; min-height:24px; margin-bottom:14px; text-align:center; }
-.instructions{ font-size:14px; color:#888; margin-bottom:20px; text-align:center; }
-
-/* --- CONTROLES (SLIDE) --- */
-.controls-container{
-  width:100%; display:flex; flex-direction:column; align-items:center; gap:12px;
-  margin-top:auto; padding-bottom:20px;
-}
-.control-button{
-  width:88%; height:56px; border-radius:999px; background:#f0f0f0;
-  position:relative; display:none; align-items:center; justify-content:center;
-  cursor:grab; user-select:none; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,.08);
-}
-.control-button:active{ cursor:grabbing; }
-
-/* HANDLE */
-.slide-handle{
-  position:absolute; left:4px; top:4px; height:48px; width:48px; border-radius:50%;
-  background:#34C759; color:#fff; display:flex; align-items:center; justify-content:center;
-  z-index:2; transition:transform .2s ease;
-}
-.slide-handle svg{ width:28px; height:28px; }
-
-/* TEXTO COM REFLEXO (ESQUERDA → DIREITA)  — versão simples e visível */
-.slide-text{
-  position:absolute; z-index:1; font-size:16px; font-weight:700; letter-spacing:.2px;
-
-  /* camada 1: brilho que se move (branco) */
-  /* camada 2: base fixa do texto (cinza escuro) */
-  background-image:
-    linear-gradient(90deg,
-      rgba(255,255,255,0) 0%,
-      rgba(255,255,255,0) 42%,
-      rgba(255,255,255,.95) 50%,
-      rgba(255,255,255,0) 58%,
-      rgba(255,255,255,0) 100%
-    ),
-    linear-gradient(90deg, #666, #666);
-  background-size: 220% 100%, 100% 100%;
-  background-position: 0% 0, 0 0;
-  background-clip: text, text;
-  -webkit-background-clip: text, text;
-  color: transparent;                 /* Firefox */
-  -webkit-text-fill-color: transparent; /* Chrome/Safari */
-
-  animation: shine-ltr 3s linear infinite;  /* ESQ → DIR */
+  /* transição/entrada lateral */
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(100%); /* começa fora da tela */
+  background:#fff;             /* garante fundo branco em cada página */
+  z-index: 1;
 }
 
-/* Keyframe do brilho ESQUERDA → DIREITA */
-@keyframes shine-ltr{
-  0%   { background-position:   0% 0, 0 0; }
-  100% { background-position: 200% 0, 0 0; }
+.page.active {
+  transform: translateX(0);    /* entra na tela */
+}
+
+/* Primeira tela começa visível */
+#page-home {
+  transform: translateX(0);
+}
+
+/* --- TELA 1: HOME --- */
+#page-home {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  /* centraliza verticalmente */
+  align-items: center;
+  gap: 28px;
+}
+
+#page-home h1 {
+  font-size: 48px;
+  font-weight: 700;
+  color: #000;
+}
+
+.home-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.choice-button {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.choice-button:active { transform: scale(0.97); }
+#btn-homem { background-color: #007AFF; } /* Azul */
+#btn-mulher { background-color: #FF2D55; } /* Rosa/Vermelho */
+
+/* --- TELA 2 & 3: MAIN (CRONÔMETRO) --- */
+.page-title {
+  font-size: 34px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.goal-text {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 22px;
+  text-align: center;
+}
+
+.timer-display {
+  font-size: 64px;          /* grande e estável */
+  font-weight: 800;
+  color: #000;
+  margin-bottom: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.snapshot-display {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  min-height: 24px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.instructions {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* --- BOTÕES DE CONTROLE (SLIDE) --- */
+.controls-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;         /* empurra para a base */
+  padding-bottom: 20px;
+}
+
+.control-button {
+  width: 88%;
+  height: 56px;
+  border-radius: 999px; /* cápsula */
+  background-color: #f0f0f0; /* fundo do trilho */
+  position: relative;
+  display: none; /* JS revela o botão correto */
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+  overflow: hidden; /* essencial para o efeito */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+}
+.control-button:active { cursor: grabbing; }
+
+/* A "BOLA" (HANDLE) */
+.slide-handle {
+  position: absolute;
+  left: 4px; /* pequeno espaçamento inicial */
+  top: 4px;
+  height: 48px; /* 56 - 4 - 4 */
+  width: 48px;
+  border-radius: 50%; /* círculo */
+  background-color: #34C759; /* padrão (verde) */
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+  transition: transform 0.2s ease; /* suaviza quando soltar */
+}
+.slide-handle svg { width: 28px; height: 28px; }
+
+/* O TEXTO COM ANIMAÇÃO DE REFLEXO */
+.slide-text {
+  position: absolute;
+  z-index: 1;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+
+  /* MÁGICA DO REFLEXO (sutil) — esquerda -> direita */
+  color: #333; /* cor base (preto escuro) */
+  background-image: linear-gradient(
+    90deg,
+    rgba(0,0,0,0.85) 0%,
+    rgba(0,0,0,0.85) 48%,
+    rgba(255,255,255,0.35) 50%,
+    rgba(0,0,0,0.85) 52%,
+    rgba(0,0,0,0.85) 100%
+  );
+  background-size: 180% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 5s linear infinite;
+}
+
+/* Animação do reflexo (esquerda -> direita) */
+@keyframes shimmer {
+  0%   { background-position: -120% 0; }
+  100% { background-position: 120% 0; }
 }
 
 /* Cores do handle por tipo */
-.control-button[data-color="green"]  .slide-handle{ background:#34C759; }
-.control-button[data-color="yellow"] .slide-handle{ background:#FFC107; color:#1a1a1a; }
-.control-button[data-color="red"]    .slide-handle{ background:#FF3B30; }
-.control-button[data-color="gray"]   .slide-handle{ background:#8E8E93; }
+.control-button[data-color="green"]  .slide-handle { background-color: #34C759; }
+.control-button[data-color="yellow"] .slide-handle { background-color: #FFC107; color:#1a1a1a; }
+.control-button[data-color="red"]    .slide-handle { background-color: #FF3B30; }
+.control-button[data-color="gray"]   .slide-handle { background-color: #8E8E93; }
 
-/* --- DETALHES --- */
-#percurso-placeholder{
-  width:100%; height:60%; border:2px dashed #CCC; border-radius:10px;
-  display:flex; justify-content:center; align-items:center; margin-top:30px; color:#AAA; text-align:center; padding:10px;
-}
-.back-button{ margin-top:auto; padding:12px 10px 22px; font-size:16px; color:#007AFF; background:none; border:none; cursor:pointer; }
-
-/* ===== BRILHO ESQUERDA → DIREITA (via ::after) ===== */
-.control-button .slide-text{
-  position: relative !important;
-  color: #333 !important;                 /* texto visível */
-  -webkit-text-fill-color: initial !important;
-  background: none !important;            /* remove hacks antigos */
-  animation: none !important;
-  overflow: hidden;                        /* esconde o brilho fora do texto */
+/* --- TELA 4: DETALHES --- */
+#percurso-placeholder {
+  width: 100%;
+  height: 60%;
+  border: 2px dashed #CCC;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  color: #AAA;
+  text-align: center;
+  padding: 10px;
 }
 
-.control-button .slide-text::after{
-  content: "";
-  position: absolute;
-  top: -20%;
-  bottom: -20%;
-  left: -150%;                             /* começa fora à ESQUERDA */
-  width: 55%;                              /* largura do feixe */
-  pointer-events: none;
-  /* feixe com núcleo branco e bordas suaves */
-  background: linear-gradient(
-    90deg,
-    rgba(255,255,255,0) 0%,
-    rgba(255,255,255,0.0) 35%,
-    rgba(255,255,255,0.95) 50%,
-    rgba(255,255,255,0.0) 65%,
-    rgba(255,255,255,0) 100%
-  );
-  filter: blur(0.5px);
-  mix-blend-mode: screen;                  /* clareia por cima do texto */
-  transform: skewX(-10deg);                /* dá “sheen” */
-  animation: slide-gloss-ltr 2.6s linear infinite; /* ESQ → DIR */
+.back-button {
+  margin-top: auto;
+  padding: 12px 10px 22px;
+  font-size: 16px;
+  color: #007AFF;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
-@keyframes slide-gloss-ltr{
-  0%   { left: -150%; }
-  100% { left:  150%; }                    /* sai pela DIREITA */
-}
-
-/* iPhone fix: sem atraso e sem scroll durante o drag */
-.control-button,
-.control-button .slide-handle {
-  touch-action: none;                  /* impede scroll/elastic */
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-.control-button .slide-handle {
-  transition: none !important;         /* NENHUMA transição no drag */
-  will-change: transform;              /* GPU */
+/* acessibilidade: reduz animação se usuário preferir */
+@media (prefers-reduced-motion: reduce) {
+  .slide-text { animation: none; background-size: 100% 100%; }
 }
