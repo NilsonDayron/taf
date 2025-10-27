@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function releaseWakeLock(){ if (wakeLock){ wakeLock.release(); wakeLock = null; } }
 
-  // ===== Sliders (drag suave e ação confiável) =====
+  // ===== Sliders (drag suave, zero delay, anti-tremor iPhone) =====
   function initSliders(){
     document.querySelectorAll('.control-button').forEach(attachSliderBehavior);
   }
@@ -159,48 +159,64 @@ document.addEventListener('DOMContentLoaded', () => {
     const handle = slider.querySelector('.slide-handle');
     const label  = slider.querySelector('.slide-text');
 
+    // Desativa seleção/gesto nativo iOS pelo JS também (belt & suspenders)
+    slider.style.touchAction = 'none';
+    handle.style.touchAction = 'none';
+    slider.style.webkitUserSelect = 'none';
+    handle.style.webkitUserSelect = 'none';
+    slider.style.userSelect = 'none';
+    handle.style.userSelect = 'none';
+
     const PADDING = 4;
     const HANDLE_W = 48;
-    const MAX_X = () => slider.clientWidth - HANDLE_W - PADDING * 2;
 
+    // estado do drag
     let dragging = false;
     let startX = 0;
     let baseX  = 0;
     let x = 0;
+    let railMax = 0;
 
-    const setX = v => { x = v; handle.style.transform = `translate3d(${x}px,0,0)`; };
+    // rAF para aplicar transform (evita tremor)
+    let rafId = null, targetX = 0;
+    const applyX = () => { handle.style.transform = `translate3d(${targetX}px,0,0)`; rafId = null; };
+    const setX = v => { targetX = v; if (!rafId) rafId = requestAnimationFrame(applyX); };
+
+    // SEM transição por padrão (0 delay)
+    handle.style.transition = 'none';
 
     const onPointerDown = e => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
       dragging = true;
       slider.classList.add('dragging');
-      handle.style.transition = 'none';
+      handle.style.transition = 'none';        // garante 0ms
       slider.setPointerCapture(e.pointerId);
       startX = e.clientX;
       baseX  = x;
+      // cache do trilho pra não recalcular a cada move
+      railMax = slider.clientWidth - HANDLE_W - PADDING * 2;
       e.preventDefault();
     };
 
     const onPointerMove = e => {
       if (!dragging) return;
-      e.preventDefault();
       const delta = e.clientX - startX;
       let next = baseX + delta;
       if (next < 0) next = 0;
-      const max = MAX_X();
-      if (next > max) next = max;
-      setX(next);
-      const pct = max === 0 ? 0 : next / max;
-      label.style.opacity = String(0.9 + 0.1 * (1 - pct));
+      if (next > railMax) next = railMax;
+      x = next;
+      setX(x);
+
+      // (opcional) evita recalcular layout: não mexemos na opacidade do label
+      // Se quiser feedback, pode usar translateY pequeno no label via rAF.
     };
 
+    // Snap instantâneo (0ms). Se quiser 100ms, troque por uma transição curta.
     const snapTo = (pos, cb) => {
-      handle.style.transition = 'transform .14s cubic-bezier(.2,.8,.2,1)';
-      setX(pos);
-      handle.addEventListener('transitionend', () => {
-        handle.style.transition = 'none';
-        if (cb) cb();
-      }, { once:true });
+      handle.style.transition = 'none';
+      x = pos;
+      setX(x);
+      if (cb) requestAnimationFrame(cb);
     };
 
     const onPointerUpOrCancel = e => {
@@ -209,31 +225,27 @@ document.addEventListener('DOMContentLoaded', () => {
       slider.classList.remove('dragging');
       slider.releasePointerCapture(e.pointerId);
 
-      const max = MAX_X();
-      const pct = max === 0 ? 0 : x / max;
+      const pct = railMax === 0 ? 0 : x / railMax;
 
       if (pct >= 0.9) {
-        // Dispara imediatamente (garante funcionalidade)
+        // Dispara ação e dá um toque visual (vai ao fim e volta) — tudo sem delay
         triggerAction(slider.dataset.btn);
-        // Snap visual ao fim e retorno
-        snapTo(max, () => snapTo(0));
+        snapTo(railMax, () => snapTo(0));
       } else {
-        // Volta ao início
         snapTo(0);
       }
-      label.style.opacity = '1';
     };
 
-    slider.addEventListener('pointerdown', onPointerDown);
-    slider.addEventListener('pointermove', onPointerMove);
-    slider.addEventListener('pointerup', onPointerUpOrCancel);
-    slider.addEventListener('pointercancel', onPointerUpOrCancel);
+    slider.addEventListener('pointerdown', onPointerDown, { passive:false });
+    slider.addEventListener('pointermove', onPointerMove, { passive:false });
+    slider.addEventListener('pointerup', onPointerUpOrCancel, { passive:false });
+    slider.addEventListener('pointercancel', onPointerUpOrCancel, { passive:false });
 
+    // API interna pra resetar
     slider._reset = () => {
       dragging = false; x = 0;
       handle.style.transition = 'none';
       setX(0);
-      label.style.opacity = '1';
       slider.classList.remove('dragging');
     };
   }

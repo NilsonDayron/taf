@@ -142,3 +142,16 @@ body {
   0%   { left: -150%; }
   100% { left:  150%; }                    /* sai pela DIREITA */
 }
+
+/* iPhone fix: sem atraso e sem scroll durante o drag */
+.control-button,
+.control-button .slide-handle {
+  touch-action: none;                  /* impede scroll/elastic */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.control-button .slide-handle {
+  transition: none !important;         /* NENHUMA transição no drag */
+  will-change: transform;              /* GPU */
+}
