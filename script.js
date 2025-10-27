@@ -1,46 +1,39 @@
-// Espera o HTML carregar antes de rodar o script
+// Espera o HTML carregar
 document.addEventListener('DOMContentLoaded', () => {
-
-  // --- OBJETIVO DO TAF ---
+  // --- CONSTANTES TAF ---
   const TIME_LIMIT_SECONDS = 12 * 60; // 12 minutos
-  const DISTANCE_GOAL_METERS = 2400;  // 2.400 metros (em uso na tela de detalhes V2)
+  const DISTANCE_GOAL_METERS = 2400;
 
-  // --- ESTADO DA APLICAÇÃO ---
-  let appState = 'ready'; // 'ready', 'running', 'paused'
+  // --- ESTADO ---
+  let appState = 'ready'; // 'ready' | 'running' | 'paused'
   let timerInterval = null;
-  let timerStartTime = 0;       // Timestamp de quando o timer (re)começou
-  let accumulatedTimeMs = 0;    // Tempo acumulado em ms
+  let timerStartTime = 0;
+  let accumulatedTimeMs = 0;
   let distanceMeters = 0;
   let lastPosition = null;
   let gpsWatchId = null;
   let wakeLock = null;
   let snapshotTaken = false;
 
-  // --- ELEMENTOS DO DOM ---
+  // --- DOM ---
   const pages = document.querySelectorAll('.page');
-  const homePage = document.getElementById('page-home');
-  const mainPage = document.getElementById('page-main');
-
-  // Botões da Home
   const btnHomem = document.getElementById('btn-homem');
   const btnMulher = document.getElementById('btn-mulher');
-
-  // Tela Principal
   const timerDisplay = document.getElementById('timer-display');
   const snapshotDisplay = document.getElementById('snapshot-display');
   const instructions = document.getElementById('instructions');
+  const btnBack = document.getElementById('btn-back');
 
-  // Botões (slide)
+  // Controle dos sliders
   const btnStart    = document.querySelector('[data-btn="start"]');
   const btnPause    = document.querySelector('[data-btn="pause"]');
   const btnContinue = document.querySelector('[data-btn="continue"]');
   const btnRestart  = document.querySelector('[data-btn="restart"]');
   const btnDetails  = document.querySelector('[data-btn="details"]');
 
-  // Navegação
-  const btnBack = document.getElementById('btn-back');
-
-  // --- 1) Navegação entre telas ---
+  /* =========================
+     NAVEGAÇÃO ENTRE TELAS
+  ==========================*/
   function showPage(pageId) {
     pages.forEach(p => p.classList.remove('active'));
     const el = document.getElementById(pageId);
@@ -51,10 +44,13 @@ document.addEventListener('DOMContentLoaded', () => {
   btnMulher.addEventListener('click', () => showPage('page-main'));
   btnBack.addEventListener('click', () => showPage('page-main'));
 
-  // --- 2) Estado dos botões ---
+  /* =========================
+     ESTADO DOS BOTÕES
+  ==========================*/
   function updateButtonState(newState) {
     appState = newState;
-    [btnStart, btnPause, btnContinue, btnRestart, btnDetails].forEach(btn => btn.style.display = 'none');
+    [btnStart, btnPause, btnContinue, btnRestart, btnDetails]
+      .forEach(b => b.style.display = 'none');
 
     if (newState === 'ready') {
       btnStart.style.display = 'flex';
@@ -63,12 +59,14 @@ document.addEventListener('DOMContentLoaded', () => {
       btnRestart.style.display = 'flex';
     } else if (newState === 'paused') {
       btnContinue.style.display = 'flex';
-      btnRestart.style.display  = 'flex';
-      btnDetails.style.display  = 'flex';
+      btnRestart.style.display = 'flex';
+      btnDetails.style.display = 'flex';
     }
   }
 
-  // --- 3) Cronômetro ---
+  /* =========================
+     CRONÔMETRO
+  ==========================*/
   function startTimer() {
     timerStartTime = Date.now();
     timerInterval = setInterval(updateTimer, 100);
@@ -87,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function restartTimer() {
     clearInterval(timerInterval);
-
     accumulatedTimeMs = 0;
     distanceMeters = 0;
     lastPosition = null;
@@ -100,6 +97,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateButtonState('ready');
     releaseWakeLock();
     stopGpsTracking();
+    // Reset visual dos sliders
+    resetAllSliders();
   }
 
   function updateTimer() {
@@ -109,22 +108,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (totalSeconds >= TIME_LIMIT_SECONDS && !snapshotTaken) {
       snapshotTaken = true;
       vibrate();
-      const distFormatada = distanceMeters.toFixed(0);
-      snapshotDisplay.textContent = `- 12:00:00 em ${distFormatada} metros`;
+      snapshotDisplay.textContent = `- 12:00:00 em ${distanceMeters.toFixed(0)} metros`;
       instructions.style.display = 'none';
     }
 
-    const hours   = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
 
     timerDisplay.textContent =
-      `${String(hours).padStart(2, '0')}:` +
-      `${String(minutes).padStart(2, '0')}:` +
-      `${String(seconds).padStart(2, '0')}`;
+      `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   }
 
-  // --- 4) GPS ---
+  /* =========================
+     GPS
+  ==========================*/
   function startGpsTracking() {
     if (!navigator.geolocation) {
       instructions.textContent = 'Geolocalização não suportada.';
@@ -153,8 +151,8 @@ document.addEventListener('DOMContentLoaded', () => {
     lastPosition = { latitude, longitude };
   }
 
-  function onGpsError(err) {
-    console.warn('Erro no GPS:', err.message);
+  function onGpsError(e) {
+    console.warn('Erro no GPS:', e.message);
     instructions.textContent = 'Erro no GPS. Tente em área aberta.';
   }
 
@@ -165,14 +163,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const dp = (lat2 - lat1) * Math.PI / 180;
     const dl = (lon2 - lon1) * Math.PI / 180;
 
-    const a = Math.sin(dp/2)**2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2)**2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+    const a =
+      Math.sin(dp/2)**2 +
+      Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2)**2;
+    return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
 
-  // --- 5) APIs: vibração & Wake Lock ---
+  /* =========================
+     APIs: vibração & Wake Lock
+  ==========================*/
   function vibrate() {
-    if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
+    if (navigator.vibrate) navigator.vibrate([220, 120, 220]);
   }
 
   async function requestWakeLock() {
@@ -181,34 +182,89 @@ document.addEventListener('DOMContentLoaded', () => {
       catch(e) { console.warn('WakeLock falhou:', e.message); }
     }
   }
-
   function releaseWakeLock() {
     if (wakeLock) { wakeLock.release(); wakeLock = null; }
   }
 
-  // --- 6) Gestos (deslizar) ---
-  function initializeGestureButtons() {
-    const buttons = document.querySelectorAll('.control-button');
-    const SLIDE_THRESHOLD = 80;
+  /* =========================
+     SLIDERS COM KNOB
+  ==========================*/
+  function initSliders() {
+    const sliders = document.querySelectorAll('.control-button');
+    sliders.forEach(slider => attachSliderBehavior(slider));
+  }
 
-    buttons.forEach(button => {
-      let startX = 0;
-      let sliding = false;
+  function attachSliderBehavior(slider) {
+    const knob = slider.querySelector('.knob');
+    const label = slider.querySelector('.label');
+    const padding = 4; // mesmo do CSS
+    const knobW = 48; // idem CSS
+    let startX = 0;
+    let currentX = 0;
+    let dragging = false;
 
-      button.addEventListener('touchstart', e => {
-        startX = e.touches[0].clientX;
-        sliding = true;
-      }, { passive: true });
+    const maxX = () => slider.clientWidth - knobW - padding * 2;
+    const setX = (x) => { knob.style.transform = `translateX(${x}px)`; };
 
-      button.addEventListener('touchend', e => {
-        if (!sliding) return;
-        sliding = false;
-        const endX = e.changedTouches[0].clientX;
-        if (endX - startX > SLIDE_THRESHOLD) {
-          triggerAction(button.dataset.btn);
-        }
-      }, { passive: true });
-    });
+    const onStart = (x) => {
+      dragging = true;
+      slider.classList.add('dragging');
+      startX = x - currentX;
+    };
+
+    const onMove = (x) => {
+      if (!dragging) return;
+      let nx = x - startX;
+      if (nx < 0) nx = 0;
+      if (nx > maxX()) nx = maxX();
+      currentX = nx;
+      setX(currentX);
+      // escurece levemente o texto conforme avança (efeito “revela”)
+      const pct = currentX / maxX();
+      label.style.opacity = String(0.9 + (0.1 * (1 - pct)));
+    };
+
+    const onEnd = () => {
+      if (!dragging) return;
+      dragging = false;
+      slider.classList.remove('dragging');
+
+      const pct = currentX / maxX();
+      if (pct > 0.9) {
+        // aciona
+        triggerAction(slider.dataset.btn);
+        // pequeno feedback e volta o knob
+        setTimeout(() => resetSlider(slider), 200);
+      } else {
+        // volta
+        resetSlider(slider);
+      }
+    };
+
+    // Suporte a toque
+    slider.addEventListener('touchstart', (e) => onStart(e.touches[0].clientX), { passive: true });
+    slider.addEventListener('touchmove',  (e) => onMove(e.touches[0].clientX),  { passive: true });
+    slider.addEventListener('touchend',   onEnd, { passive: true });
+
+    // Suporte a mouse (teste no desktop)
+    slider.addEventListener('mousedown', (e) => onStart(e.clientX));
+    window.addEventListener('mousemove', (e) => onMove(e.clientX));
+    window.addEventListener('mouseup', onEnd);
+
+    // guarda no elemento (para reset global)
+    slider._reset = () => {
+      currentX = 0;
+      setX(0);
+      label.style.opacity = '1';
+    };
+  }
+
+  function resetSlider(slider) {
+    if (slider?._reset) slider._reset();
+  }
+
+  function resetAllSliders() {
+    document.querySelectorAll('.control-button').forEach(resetSlider);
   }
 
   function triggerAction(action) {
@@ -221,11 +277,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- 7) Inicialização ---
+  /* =========================
+     INIT
+  ==========================*/
   function init() {
-    initializeGestureButtons();
-    showPage('page-home');     // garante a home ativa
-    updateButtonState('ready'); // prepara botões (da página principal)
+    initSliders();
+    showPage('page-home');
+    updateButtonState('ready');
   }
 
   init();

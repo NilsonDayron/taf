@@ -1,68 +1,87 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Projeto TAF</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, user-scalable=no"
+  />
+  <title>Projeto TAF</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="script.js" defer></script>
 </head>
 <body>
-    <main class="app-container">
+  <main class="app-container">
+    <!-- TELA 1: HOME -->
+    <section class="page active" id="page-home">
+      <h1>TAF</h1>
+      <div class="home-buttons">
+        <button class="choice-button" id="btn-homem">Homem</button>
+        <button class="choice-button" id="btn-mulher">Mulher</button>
+      </div>
+    </section>
 
-        <section class="page active" id="page-home">
-            <h1>TAF</h1>
-            <div class="home-buttons">
-                <button class="choice-button" id="btn-homem">Homem</button>
-                <button class="choice-button" id="btn-mulher">Mulher</button>
-            </div>
-        </section>
+    <!-- TELA 2/3: PRINCIPAL -->
+    <section class="page" id="page-main">
+      <h1 class="page-title">TAF</h1>
+      <p class="goal-text">Tempo padrão 12:00:00 em 2.400 metros</p>
 
-        <section class="page" id="page-main">
-            <h1 class="page-title">TAF</h1>
-            <p class="goal-text">Tempo padrão 12:00:00 em 2.400 metros</p>
-            
-            <div class="timer-display" id="timer-display">00:00:00</div>
-            
-            <div class="snapshot-display" id="snapshot-display"></div>
+      <div class="timer-display" id="timer-display">00:00:00</div>
+      <div class="snapshot-display" id="snapshot-display"></div>
 
-            <p class="instructions" id="instructions">
-                Para precisão do GPS, mantenha a tela acesa.
-            </p>
+      <p class="instructions" id="instructions">
+        Para precisão do GPS, mantenha a tela acesa.
+      </p>
 
-            <div class="controls-container" id="controls-container">
-                <div class="control-button green" data-btn="start">
-                    <span>deslize para iniciar</span>
-                </div>
-                
-                <div class="control-button yellow" data-btn="pause">
-                    <span>deslize para pausar</span>
-                </div>
-                
-                <div class="control-button green" data-btn="continue">
-                    <span>deslize para continuar</span>
-                </div>
-                
-                <div class="control-button red" data-btn="restart">
-                    <span>deslize para reiniciar</span>
-                </div>
-                
-                <div class="control-button gray" data-btn="details">
-                    <span>deslize para mais detalhes</span>
-                </div>
-            </div>
-        </section>
+      <div class="controls-container" id="controls-container">
+        <!-- Cada botão agora é um "slider" com knob + label -->
+        <div class="control-button green" data-btn="start">
+          <div class="knob">
+            <span class="knob-icon">▶</span>
+          </div>
+          <span class="label">deslize para iniciar</span>
+        </div>
 
-        <section class="page" id="page-details">
-            <h1 class="page-title">Percurso</h1>
-            
-            <div id="percurso-placeholder">
-                <p>(Aqui ficará o mapa/desenho do percurso na Versão 2)</p>
-            </div>
+        <div class="control-button yellow" data-btn="pause">
+          <div class="knob">
+            <span class="knob-icon">⏸</span>
+          </div>
+          <span class="label">deslize para pausar</span>
+        </div>
 
-            <button class="back-button" id="btn-back">voltar para tela anterior</button>
-        </section>
+        <div class="control-button green" data-btn="continue">
+          <div class="knob">
+            <span class="knob-icon">▶</span>
+          </div>
+          <span class="label">deslize para continuar</span>
+        </div>
 
-    </main>
+        <div class="control-button red" data-btn="restart">
+          <div class="knob">
+            <span class="knob-icon">↺</span>
+          </div>
+          <span class="label">deslize para reiniciar</span>
+        </div>
+
+        <div class="control-button gray" data-btn="details">
+          <div class="knob">
+            <span class="knob-icon">ℹ︎</span>
+          </div>
+          <span class="label">deslize para mais detalhes</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TELA 4: DETALHES -->
+    <section class="page" id="page-details">
+      <h1 class="page-title">Percurso</h1>
+
+      <div id="percurso-placeholder">
+        <p>(Aqui ficará o mapa/desenho do percurso na Versão 2)</p>
+      </div>
+
+      <button class="back-button" id="btn-back">voltar para tela anterior</button>
+    </section>
+  </main>
 </body>
 </html>
