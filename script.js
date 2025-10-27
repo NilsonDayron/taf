@@ -24,29 +24,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const instructions = document.getElementById('instructions');
   const btnBack = document.getElementById('btn-back');
 
-  // Controle dos sliders
+  // sliders
   const btnStart    = document.querySelector('[data-btn="start"]');
   const btnPause    = document.querySelector('[data-btn="pause"]');
   const btnContinue = document.querySelector('[data-btn="continue"]');
   const btnRestart  = document.querySelector('[data-btn="restart"]');
   const btnDetails  = document.querySelector('[data-btn="details"]');
 
-  /* =========================
-     NAVEGAÇÃO ENTRE TELAS
-  ==========================*/
+  /* ===== Navegação ===== */
   function showPage(pageId) {
     pages.forEach(p => p.classList.remove('active'));
     const el = document.getElementById(pageId);
     if (el) el.classList.add('active');
   }
-
   btnHomem.addEventListener('click', () => showPage('page-main'));
   btnMulher.addEventListener('click', () => showPage('page-main'));
   btnBack.addEventListener('click', () => showPage('page-main'));
 
-  /* =========================
-     ESTADO DOS BOTÕES
-  ==========================*/
+  /* ===== Estado dos botões ===== */
   function updateButtonState(newState) {
     appState = newState;
     [btnStart, btnPause, btnContinue, btnRestart, btnDetails]
@@ -59,14 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
       btnRestart.style.display = 'flex';
     } else if (newState === 'paused') {
       btnContinue.style.display = 'flex';
-      btnRestart.style.display = 'flex';
-      btnDetails.style.display = 'flex';
+      btnRestart.style.display  = 'flex';
+      btnDetails.style.display  = 'flex';
     }
   }
 
-  /* =========================
-     CRONÔMETRO
-  ==========================*/
+  /* ===== Cronômetro ===== */
   function startTimer() {
     timerStartTime = Date.now();
     timerInterval = setInterval(updateTimer, 100);
@@ -97,7 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateButtonState('ready');
     releaseWakeLock();
     stopGpsTracking();
-    // Reset visual dos sliders
     resetAllSliders();
   }
 
@@ -120,9 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   }
 
-  /* =========================
-     GPS
-  ==========================*/
+  /* ===== GPS ===== */
   function startGpsTracking() {
     if (!navigator.geolocation) {
       instructions.textContent = 'Geolocalização não suportada.';
@@ -134,12 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
       { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
     );
   }
-
   function stopGpsTracking() {
     if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
     lastPosition = null;
   }
-
   function onGpsSuccess(position) {
     const { latitude, longitude } = position.coords;
     if (lastPosition) {
@@ -150,32 +138,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     lastPosition = { latitude, longitude };
   }
-
   function onGpsError(e) {
     console.warn('Erro no GPS:', e.message);
     instructions.textContent = 'Erro no GPS. Tente em área aberta.';
   }
-
   function haversineDistance(lat1, lon1, lat2, lon2) {
     const R = 6371e3;
     const p1 = lat1 * Math.PI / 180;
     const p2 = lat2 * Math.PI / 180;
     const dp = (lat2 - lat1) * Math.PI / 180;
     const dl = (lon2 - lon1) * Math.PI / 180;
-
-    const a =
-      Math.sin(dp/2)**2 +
-      Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2)**2;
+    const a = Math.sin(dp/2)**2 + Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
     return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
 
-  /* =========================
-     APIs: vibração & Wake Lock
-  ==========================*/
-  function vibrate() {
-    if (navigator.vibrate) navigator.vibrate([220, 120, 220]);
-  }
-
+  /* ===== Vibração & Wake Lock ===== */
+  function vibrate() { if (navigator.vibrate) navigator.vibrate([220,120,220]); }
   async function requestWakeLock() {
     if ('wakeLock' in navigator) {
       try { wakeLock = await navigator.wakeLock.request('screen'); }
@@ -186,86 +164,66 @@ document.addEventListener('DOMContentLoaded', () => {
     if (wakeLock) { wakeLock.release(); wakeLock = null; }
   }
 
-  /* =========================
-     SLIDERS COM KNOB
-  ==========================*/
+  /* ===== Sliders com .slide-handle ===== */
   function initSliders() {
-    const sliders = document.querySelectorAll('.control-button');
-    sliders.forEach(slider => attachSliderBehavior(slider));
+    document.querySelectorAll('.control-button').forEach(attachSliderBehavior);
   }
 
   function attachSliderBehavior(slider) {
-    const knob = slider.querySelector('.knob');
-    const label = slider.querySelector('.label');
-    const padding = 4; // mesmo do CSS
-    const knobW = 48; // idem CSS
+    const handle = slider.querySelector('.slide-handle');
+    const label  = slider.querySelector('.slide-text');
+    const PADDING = 4;   // igual ao CSS
+    const HANDLE_W = 48; // igual ao CSS
+
     let startX = 0;
     let currentX = 0;
     let dragging = false;
 
-    const maxX = () => slider.clientWidth - knobW - padding * 2;
-    const setX = (x) => { knob.style.transform = `translateX(${x}px)`; };
+    const maxX = () => slider.clientWidth - HANDLE_W - PADDING * 2;
+    const setX = x => { handle.style.transform = `translateX(${x}px)`; };
 
-    const onStart = (x) => {
-      dragging = true;
-      slider.classList.add('dragging');
-      startX = x - currentX;
-    };
-
-    const onMove = (x) => {
+    const start = x => { dragging = true; startX = x - currentX; slider.classList.add('dragging'); };
+    const move  = x => {
       if (!dragging) return;
       let nx = x - startX;
       if (nx < 0) nx = 0;
       if (nx > maxX()) nx = maxX();
       currentX = nx;
       setX(currentX);
-      // escurece levemente o texto conforme avança (efeito “revela”)
-      const pct = currentX / maxX();
-      label.style.opacity = String(0.9 + (0.1 * (1 - pct)));
-    };
 
-    const onEnd = () => {
+      // sutil: faz o texto “revelar” um pouco conforme avança
+      const pct = currentX / maxX();
+      label.style.opacity = String(0.9 + 0.1 * (1 - pct));
+    };
+    const end   = () => {
       if (!dragging) return;
       dragging = false;
       slider.classList.remove('dragging');
 
       const pct = currentX / maxX();
       if (pct > 0.9) {
-        // aciona
         triggerAction(slider.dataset.btn);
-        // pequeno feedback e volta o knob
         setTimeout(() => resetSlider(slider), 200);
       } else {
-        // volta
         resetSlider(slider);
       }
     };
 
-    // Suporte a toque
-    slider.addEventListener('touchstart', (e) => onStart(e.touches[0].clientX), { passive: true });
-    slider.addEventListener('touchmove',  (e) => onMove(e.touches[0].clientX),  { passive: true });
-    slider.addEventListener('touchend',   onEnd, { passive: true });
+    // toque
+    slider.addEventListener('touchstart', e => start(e.touches[0].clientX), { passive: true });
+    slider.addEventListener('touchmove',  e => move(e.touches[0].clientX),  { passive: true });
+    slider.addEventListener('touchend',   end, { passive: true });
 
-    // Suporte a mouse (teste no desktop)
-    slider.addEventListener('mousedown', (e) => onStart(e.clientX));
-    window.addEventListener('mousemove', (e) => onMove(e.clientX));
-    window.addEventListener('mouseup', onEnd);
+    // mouse (teste no desktop)
+    slider.addEventListener('mousedown', e => start(e.clientX));
+    window.addEventListener('mousemove', e => move(e.clientX));
+    window.addEventListener('mouseup',   end);
 
-    // guarda no elemento (para reset global)
-    slider._reset = () => {
-      currentX = 0;
-      setX(0);
-      label.style.opacity = '1';
-    };
+    slider._reset = () => { currentX = 0; setX(0); label.style.opacity = '1'; };
   }
 
-  function resetSlider(slider) {
-    if (slider?._reset) slider._reset();
-  }
-
-  function resetAllSliders() {
-    document.querySelectorAll('.control-button').forEach(resetSlider);
-  }
+  function resetSlider(slider) { slider?._reset && slider._reset(); }
+  function resetAllSliders() { document.querySelectorAll('.control-button').forEach(resetSlider); }
 
   function triggerAction(action) {
     switch (action) {
@@ -277,14 +235,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  /* =========================
-     INIT
-  ==========================*/
+  /* ===== INIT ===== */
   function init() {
     initSliders();
     showPage('page-home');
     updateButtonState('ready');
   }
-
   init();
 });

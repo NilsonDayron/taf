@@ -1,178 +1,244 @@
-/* RESET */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* --- RESET BÁSICO --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-/* Altura estável em iOS */
-html, body { height: 100%; }
+/* Mantém altura total e fundo branco (evita “tela cinza”) */
+html, body {
+  height: 100%;
+}
+/* Evita zoom automático do Safari em iOS */
+html { -webkit-text-size-adjust: 100%; }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #ffffff;
+  background-color: #ffffff; /* branco */
   color: #333;
 }
 
-/* CONTAINER */
+/* --- CONTAINER DO APP --- */
 .app-container {
   width: 100%;
-  max-width: 480px;
-  min-height: 100dvh;           /* melhor em iOS; fallback natural para navegadores antigos */
-  margin: 0 auto;
-  background: #fff;
+  max-width: 480px;              /* largura “iPhone” em desktop */
+  min-height: 100dvh;            /* iOS-friendly (substitui 100vh) */
+  margin: 0 auto;                /* centraliza horizontal no desktop */
+  background-color: #FFFFFF;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   position: relative;
-  overflow: hidden;
+  overflow: hidden;              /* páginas fora da tela ficam ocultas */
 }
 
-/* PÁGINAS */
+/* --- LÓGICA DAS PÁGINAS (SPA) --- */
 .page {
+  width: 100%;
+  height: 100%;
+  padding: 30px;
   position: absolute;
   inset: 0;
-  padding: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #fff;
-  transform: translateX(100%);
-  transition: transform .3s ease-in-out;
+
+  /* transição/entrada lateral */
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(100%); /* começa fora da tela */
+  background:#fff;             /* garante fundo branco em cada página */
   z-index: 1;
 }
 
-.page.active { transform: translateX(0); }
-#page-home { transform: translateX(0); }
+.page.active {
+  transform: translateX(0);    /* entra na tela */
+}
 
-/* HOME */
+/* Primeira tela começa visível */
 #page-home {
-  justify-content: center;
+  transform: translateX(0);
+}
+
+/* --- TELA 1: HOME --- */
+#page-home {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  /* centraliza verticalmente */
+  align-items: center;
   gap: 28px;
 }
+
 #page-home h1 {
   font-size: 48px;
   font-weight: 700;
   color: #000;
 }
-.home-buttons { display: flex; gap: 18px; }
+
+.home-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
 .choice-button {
   display: inline-block;
   font-size: 18px;
   font-weight: 600;
   color: #fff;
   padding: 14px 28px;
-  border: 0;
+  border: none;
   border-radius: 999px;
   cursor: pointer;
-  transition: transform .12s ease;
+  transition: transform 0.12s ease;
 }
-.choice-button:active { transform: scale(.97); }
-#btn-homem { background: #007AFF; }
-#btn-mulher { background: #FF2D55; }
 
-/* TÍTULOS & TEXTOS */
-.page-title { font-size: 34px; font-weight: 700; margin-bottom: 8px; }
-.goal-text   { font-size: 15px; color:#555; margin-bottom: 22px; text-align:center; }
+.choice-button:active { transform: scale(0.97); }
+#btn-homem { background-color: #007AFF; } /* Azul */
+#btn-mulher { background-color: #FF2D55; } /* Rosa/Vermelho */
+
+/* --- TELA 2 & 3: MAIN (CRONÔMETRO) --- */
+.page-title {
+  font-size: 34px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.goal-text {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 22px;
+  text-align: center;
+}
+
 .timer-display {
-  font-size: 64px; font-weight: 800; color:#000; margin-bottom: 12px;
+  font-size: 64px;          /* grande e estável */
+  font-weight: 800;
+  color: #000;
+  margin-bottom: 12px;
   font-variant-numeric: tabular-nums;
 }
-.snapshot-display { font-size: 18px; font-weight: 600; color:#333; min-height:24px; margin-bottom: 14px; text-align:center; }
-.instructions     { font-size: 14px; color:#888; margin-bottom: 20px; text-align:center; }
 
-/* CONTROLES */
+.snapshot-display {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  min-height: 24px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.instructions {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* --- BOTÕES DE CONTROLE (SLIDE) --- */
 .controls-container {
   width: 100%;
-  margin-top: auto;
-  padding-bottom: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
   align-items: center;
+  gap: 12px;
+  margin-top: auto;         /* empurra para a base */
+  padding-bottom: 20px;
 }
 
-/* SLIDER BOTÃO (estilo iOS) */
 .control-button {
-  --track: #ececec;
-  --text: #000;
   width: 88%;
   height: 56px;
-  border-radius: 999px;
+  border-radius: 999px; /* cápsula */
+  background-color: #f0f0f0; /* fundo do trilho */
   position: relative;
-  display: none;               /* JS decide qual aparece */
+  display: none; /* JS revela o botão correto */
   align-items: center;
   justify-content: center;
-  background:
-    radial-gradient(120% 100% at 0% 0%, rgba(255,255,255,.55), rgba(255,255,255,.15) 60%),
-    linear-gradient(180deg, rgba(255,255,255,.3), rgba(0,0,0,.06));
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.6),
-    inset 0 -1px 0 rgba(0,0,0,.06),
-    0 2px 6px rgba(0,0,0,.08);
-  overflow: hidden;
+  cursor: grab;
   user-select: none;
-  touch-action: pan-x;
-  backdrop-filter: saturate(140%) blur(6px);
+  overflow: hidden; /* essencial para o efeito */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
 }
+.control-button:active { cursor: grabbing; }
 
-/* cores do aro/halo (mantém sua semântica) */
-.control-button.green { outline: 2px solid rgba(52,199,89,.18); }
-.control-button.yellow{ outline: 2px solid rgba(255,193,7,.20); }
-.control-button.red   { outline: 2px solid rgba(255,59,48,.20); }
-.control-button.gray  { outline: 2px solid rgba(142,142,147,.22); }
+/* A "BOLA" (HANDLE) */
+.slide-handle {
+  position: absolute;
+  left: 4px; /* pequeno espaçamento inicial */
+  top: 4px;
+  height: 48px; /* 56 - 4 - 4 */
+  width: 48px;
+  border-radius: 50%; /* círculo */
+  background-color: #34C759; /* padrão (verde) */
+  color: white; /* Cor do ícone SVG */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+  transition: transform 0.2s ease; /* suaviza quando soltar */
+}
+.slide-handle svg { width: 28px; height: 28px; }
 
-/* LABEL COM REFLEXO QUE PASSA */
-.control-button .label {
-  position: relative;
+/* O TEXTO COM ANIMAÇÃO (versão diagonal mais “bonita”) */
+.slide-text {
+  position: absolute;
   z-index: 1;
   font-size: 16px;
-  font-weight: 800;
-  color: transparent;                   /* vamos pintar via background-clip */
-  background-image:
-    linear-gradient(90deg,
-      #000 0%, #000 42%,
-      rgba(255,255,255,.95) 50%,
-      #000 58%, #000 100%);
-  -webkit-background-clip: text;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  
+  /* Reflexo suave em diagonal (vai e vem) */
+  color: #333; /* Cor base (preto escuro) */
+  background-image: linear-gradient(
+    -75deg,
+    rgba(0,0,0, 0.6) 0%,
+    rgba(255,255,255, 0.8) 50%,
+    rgba(0,0,0, 0.6) 100%
+  );
+  background-size: 200% auto;
   background-clip: text;
-  background-size: 250% 100%;
-  animation: shimmer 2.6s ease-in-out infinite;
-  letter-spacing: .2px;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 2.5s linear infinite;
 }
 
-/* anima o “reflexo” atravessando as letras */
+/* Animação do reflexo (vai e vem) */
 @keyframes shimmer {
-  0%   { background-position: -120% 0; }
-  50%  { background-position: 0% 0; }
-  100% { background-position: 120% 0; }
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
 }
 
-/* KNOB (a bolinha) */
-.control-button .knob {
-  position: absolute;
-  left: 4px; top: 4px;
-  width: 48px; height: 48px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow:
-    0 2px 8px rgba(0,0,0,.18),
-    inset 0 1px 0 rgba(255,255,255,.9);
-  display: grid;
-  place-items: center;
-  z-index: 2;
-  transition: transform .2s ease;
-  will-change: transform;
+/* Cores do handle por tipo */
+.control-button[data-color="green"]  .slide-handle { background-color: #34C759; }
+.control-button[data-color="yellow"] .slide-handle { background-color: #FFC107; color:#1a1a1a; }
+.control-button[data-color="red"]    .slide-handle { background-color: #FF3B30; }
+.control-button[data-color="gray"]   .slide-handle { background-color: #8E8E93; }
+
+/* --- TELA 4: DETALHES --- */
+#percurso-placeholder {
+  width: 100%;
+  height: 60%;
+  border: 2px dashed #CCC;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  color: #AAA;
+  text-align: center;
+  padding: 10px;
 }
 
-.knob .knob-icon {
-  font-size: 18px;
-  line-height: 1;
-  color: #d00; /* ícone vermelho lembra o “power” do iOS */
+.back-button {
+  margin-top: auto;
+  padding: 12px 10px 22px;
+  font-size: 16px;
+  color: #007AFF;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
-/* Quando arrasta, dá feedback */
-.control-button.dragging .knob {
-  transition: none;
+/* Acessibilidade: reduz animação se o usuário preferir */
+@media (prefers-reduced-motion: reduce) {
+  .slide-text { animation: none; background-size: 100% 100%; }
 }
-
-/* VISIBILIDADE */
-.control-button.green,
-.control-button.yellow,
-.control-button.red,
-.control-button.gray { display: flex; }

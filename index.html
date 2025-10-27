@@ -2,10 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, user-scalable=no"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Projeto TAF</title>
   <link rel="stylesheet" href="style.css" />
   <script src="script.js" defer></script>
@@ -34,40 +31,55 @@
       </p>
 
       <div class="controls-container" id="controls-container">
-        <!-- Cada botão agora é um "slider" com knob + label -->
-        <div class="control-button green" data-btn="start">
-          <div class="knob">
-            <span class="knob-icon">▶</span>
+        <!-- start -->
+        <div class="control-button" data-btn="start" data-color="green">
+          <div class="slide-handle" aria-hidden="true">
+            <!-- play -->
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
           </div>
-          <span class="label">deslize para iniciar</span>
+          <span class="slide-text">deslize para iniciar</span>
         </div>
 
-        <div class="control-button yellow" data-btn="pause">
-          <div class="knob">
-            <span class="knob-icon">⏸</span>
+        <!-- pause -->
+        <div class="control-button" data-btn="pause" data-color="yellow">
+          <div class="slide-handle" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M6 5h4v14H6zm8 0h4v14h-4z" />
+            </svg>
           </div>
-          <span class="label">deslize para pausar</span>
+          <span class="slide-text">deslize para pausar</span>
         </div>
 
-        <div class="control-button green" data-btn="continue">
-          <div class="knob">
-            <span class="knob-icon">▶</span>
+        <!-- continue -->
+        <div class="control-button" data-btn="continue" data-color="green">
+          <div class="slide-handle" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
           </div>
-          <span class="label">deslize para continuar</span>
+          <span class="slide-text">deslize para continuar</span>
         </div>
 
-        <div class="control-button red" data-btn="restart">
-          <div class="knob">
-            <span class="knob-icon">↺</span>
+        <!-- restart -->
+        <div class="control-button" data-btn="restart" data-color="red">
+          <div class="slide-handle" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 6V3L8 7l4 4V8a4 4 0 11-4 4H6a6 6 0 106-6z" />
+            </svg>
           </div>
-          <span class="label">deslize para reiniciar</span>
+          <span class="slide-text">deslize para reiniciar</span>
         </div>
 
-        <div class="control-button gray" data-btn="details">
-          <div class="knob">
-            <span class="knob-icon">ℹ︎</span>
+        <!-- details -->
+        <div class="control-button" data-btn="details" data-color="gray">
+          <div class="slide-handle" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M11 7h2v2h-2zm0 4h2v6h-2zM12 2a10 10 0 100 20 10 10 0 000-20z"/>
+            </svg>
           </div>
-          <span class="label">deslize para mais detalhes</span>
+          <span class="slide-text">deslize para mais detalhes</span>
         </div>
       </div>
     </section>
@@ -75,11 +87,9 @@
     <!-- TELA 4: DETALHES -->
     <section class="page" id="page-details">
       <h1 class="page-title">Percurso</h1>
-
       <div id="percurso-placeholder">
         <p>(Aqui ficará o mapa/desenho do percurso na Versão 2)</p>
       </div>
-
       <button class="back-button" id="btn-back">voltar para tela anterior</button>
     </section>
   </main>
