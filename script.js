@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (wakeLock) { wakeLock.release(); wakeLock = null; }
   }
 
-  /* ===== Sliders SUAVES com Pointer Events + rAF ===== */
+  /* ===== Sliders: sem delay, colado no dedo ===== */
   function initSliders() {
     document.querySelectorAll('.control-button').forEach(attachSliderBehavior);
   }
@@ -179,13 +179,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let dragging = false;
     let startX = 0;               // posição do ponteiro no início
-    let baseX  = 0;               // posição acumulada do knob
-    let targetX = 0;              // alvo de movimento (clamp)
-    let rafId = null;             // id do requestAnimationFrame
-    let needsFrame = false;       // evita múltiplos rAF por frame
+    let baseX  = 0;               // posição acumulada do knob (antes do drag)
+    let x = 0;                    // posição atual do knob (px)
 
-    // aplica transform via GPU
-    const setX = (x) => { handle.style.transform = `translate3d(${x}px,0,0)`; };
+    // Move imediatamente (sem rAF, sem transição)
+    const setX = (val) => {
+      x = val;
+      handle.style.transform = `translate3d(${x}px,0,0)`;
+    };
 
     const onPointerDown = (e) => {
       // apenas botão primário / toques
@@ -194,54 +195,40 @@ document.addEventListener('DOMContentLoaded', () => {
       dragging = true;
       slider.classList.add('dragging');
 
-      // Captura o ponteiro para receber os moves mesmo fora do elemento
+      // Remover qualquer transição para ficar 1:1 com o dedo
+      handle.style.transition = 'none';
+
+      // Captura o ponteiro para receber move/up mesmo fora do elemento
       slider.setPointerCapture(e.pointerId);
 
       startX = e.clientX;
-      // baseX é onde o knob estava antes de começar este drag
-      // (se estava no meio, continua do meio)
-      // Para ler a posição atual, podemos inferir de targetX
-      // (garantindo consistência nas reentrâncias)
-      baseX = targetX;
-
-      e.preventDefault(); // bloqueia seleção/scroll fantasma
+      baseX  = x;                 // começa de onde parou
+      e.preventDefault();         // bloqueia seleção/scroll fantasma
     };
 
     const onPointerMove = (e) => {
       if (!dragging) return;
-      e.preventDefault(); // bloqueia scroll vertical no iOS
+      e.preventDefault();         // bloqueia scroll vertical no iOS
 
       const delta = e.clientX - startX;
       let next = baseX + delta;
+
       if (next < 0) next = 0;
       const max = MAX_X();
       if (next > max) next = max;
-      targetX = next;
 
-      // agenda um frame de atualização
-      if (!needsFrame) {
-        needsFrame = true;
-        rafId = requestAnimationFrame(applyDragFrame);
-      }
-    };
+      setX(next);
 
-    const applyDragFrame = () => {
-      needsFrame = false;
-      setX(targetX);
-
-      // efeito sutil no texto (opcional e barato)
-      const pct = MAX_X() === 0 ? 0 : (targetX / MAX_X());
+      // sutil: muda opacidade do texto conforme avança
+      const pct = max === 0 ? 0 : next / max;
       label.style.opacity = String(0.9 + 0.1 * (1 - pct));
     };
 
     const snapBack = () => {
-      handle.style.transition = 'transform .18s ease';
+      // Snap suave de volta
+      handle.style.transition = 'transform .16s cubic-bezier(.2,.8,.2,1)';
       setX(0);
       label.style.opacity = '1';
-      // limpa estados
-      targetX = 0;
-      baseX = 0;
-      // remove a transição após finalizar (para o próximo drag ficar instantâneo)
       handle.addEventListener('transitionend', () => {
         handle.style.transition = 'none';
       }, { once: true });
@@ -249,15 +236,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const snapForwardAndTrigger = () => {
       const max = MAX_X();
-      handle.style.transition = 'transform .16s ease';
+      handle.style.transition = 'transform .14s cubic-bezier(.2,.8,.2,1)';
       setX(max);
       label.style.opacity = '1';
-
       handle.addEventListener('transitionend', () => {
         handle.style.transition = 'none';
         // chama ação e retorna o knob
         triggerAction(slider.dataset.btn);
-        setTimeout(() => snapBack(), 180);
+        setTimeout(() => snapBack(), 140);
       }, { once: true });
     };
 
@@ -267,9 +253,8 @@ document.addEventListener('DOMContentLoaded', () => {
       slider.classList.remove('dragging');
       slider.releasePointerCapture(e.pointerId);
 
-      // decide se acionou (>= 90%)
       const max = MAX_X();
-      const pct = max === 0 ? 0 : (targetX / max);
+      const pct = max === 0 ? 0 : x / max;
       if (pct >= 0.9) {
         snapForwardAndTrigger();
       } else {
@@ -277,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    // Bind de Pointer Events (um só código para mouse + toque)
+    // Pointer Events: um só código para mouse + toque (iOS/Android/Desktop)
     slider.addEventListener('pointerdown', onPointerDown);
     slider.addEventListener('pointermove', onPointerMove);
     slider.addEventListener('pointerup', onPointerUpOrCancel);
@@ -285,10 +270,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // API de reset usada no “reiniciar”
     slider._reset = () => {
-      cancelAnimationFrame(rafId);
       dragging = false;
-      targetX = 0;
-      baseX = 0;
+      x = 0;
       handle.style.transition = 'none';
       setX(0);
       label.style.opacity = '1';

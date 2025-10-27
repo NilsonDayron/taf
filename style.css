@@ -1,14 +1,10 @@
 /* --- RESET BÁSICO --- */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 /* Mantém altura total e fundo branco (evita “tela cinza”) */
-html, body {
-  height: 100%;
-}
+html, body { height: 100%; }
+/* Evita zoom automático do Safari em iOS */
+html { -webkit-text-size-adjust: 100%; }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -20,7 +16,7 @@ body {
 .app-container {
   width: 100%;
   max-width: 480px;              /* largura “iPhone” em desktop */
-  min-height: 100vh;             /* garante altura total visível */
+  min-height: 100dvh;            /* iOS-friendly (substitui 100vh) */
   margin: 0 auto;                /* centraliza horizontal no desktop */
   background-color: #FFFFFF;
   border-radius: 12px;
@@ -46,15 +42,10 @@ body {
   background:#fff;             /* garante fundo branco em cada página */
   z-index: 1;
 }
-
-.page.active {
-  transform: translateX(0);    /* entra na tela */
-}
+.page.active { transform: translateX(0); }
 
 /* Primeira tela começa visível */
-#page-home {
-  transform: translateX(0);
-}
+#page-home { transform: translateX(0); }
 
 /* --- TELA 1: HOME --- */
 #page-home {
@@ -64,19 +55,9 @@ body {
   align-items: center;
   gap: 28px;
 }
+#page-home h1 { font-size: 48px; font-weight: 700; color: #000; }
 
-#page-home h1 {
-  font-size: 48px;
-  font-weight: 700;
-  color: #000;
-}
-
-.home-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 18px;
-}
-
+.home-buttons { display: flex; justify-content: center; gap: 18px; }
 .choice-button {
   display: inline-block;
   font-size: 18px;
@@ -88,25 +69,13 @@ body {
   cursor: pointer;
   transition: transform 0.12s ease;
 }
-
 .choice-button:active { transform: scale(0.97); }
 #btn-homem { background-color: #007AFF; } /* Azul */
 #btn-mulher { background-color: #FF2D55; } /* Rosa/Vermelho */
 
 /* --- TELA 2 & 3: MAIN (CRONÔMETRO) --- */
-.page-title {
-  font-size: 34px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.goal-text {
-  font-size: 15px;
-  color: #555;
-  margin-bottom: 22px;
-  text-align: center;
-}
-
+.page-title { font-size: 34px; font-weight: 700; margin-bottom: 8px; }
+.goal-text { font-size: 15px; color: #555; margin-bottom: 22px; text-align: center; }
 .timer-display {
   font-size: 64px;          /* grande e estável */
   font-weight: 800;
@@ -114,7 +83,6 @@ body {
   margin-bottom: 12px;
   font-variant-numeric: tabular-nums;
 }
-
 .snapshot-display {
   font-size: 18px;
   font-weight: 600;
@@ -123,13 +91,7 @@ body {
   margin-bottom: 14px;
   text-align: center;
 }
-
-.instructions {
-  font-size: 14px;
-  color: #888;
-  margin-bottom: 20px;
-  text-align: center;
-}
+.instructions { font-size: 14px; color: #888; margin-bottom: 20px; text-align: center; }
 
 /* --- BOTÕES DE CONTROLE (SLIDE) --- */
 .controls-container {
@@ -145,16 +107,20 @@ body {
 .control-button {
   width: 88%;
   height: 56px;
-  border-radius: 999px; /* cápsula */
-  background-color: #f0f0f0; /* fundo do trilho */
+  border-radius: 999px;           /* cápsula */
+  background-color: #f0f0f0;      /* fundo do trilho */
   position: relative;
-  display: none; /* JS revela o botão correto */
+  display: none;                  /* JS revela o botão correto */
   align-items: center;
   justify-content: center;
   cursor: grab;
   user-select: none;
-  overflow: hidden; /* essencial para o efeito */
+  overflow: hidden;               /* essencial para o efeito */
   box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+
+  /* IMPORTANTE: sem rolagem/gestos concorrentes no iOS */
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .control-button:active { cursor: grabbing; }
 
@@ -172,11 +138,15 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 2;
-  transition: transform 0.2s ease; /* suaviza quando soltar */
+
+  /* Sem transição durante o arraste; só usamos no snap */
+  transition: none;
+  will-change: transform;         /* animação por GPU, sem tremor */
+  transform: translate3d(0,0,0);  /* inicializa a camada */
 }
 .slide-handle svg { width: 28px; height: 28px; }
 
-/* O TEXTO COM ANIMAÇÃO (A MINHA VERSÃO "MAIS BONITA") */
+/* O TEXTO COM ANIMAÇÃO (versão diagonal mais “bonita”) */
 .slide-text {
   position: absolute;
   z-index: 1;
@@ -184,25 +154,25 @@ body {
   font-weight: 700;
   letter-spacing: 0.2px;
   
-  /* MINHA ANIMAÇÃO (Suave e Diagonal) */
+  /* Reflexo suave em diagonal (vai e vem) */
   color: #333; /* Cor base (preto escuro) */
   background-image: linear-gradient(
-      -75deg, /* Diagonal */
-      rgba(0,0,0, 0.6) 0%,
-      rgba(255,255,255, 0.8) 50%, /* Brilho suave */
-      rgba(0,0,0, 0.6) 100%
+    -75deg,
+    rgba(0,0,0, 0.6) 0%,
+    rgba(255,255,255, 0.8) 50%,
+    rgba(0,0,0, 0.6) 100%
   );
   background-size: 200% auto;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: shimmer 2.5s linear infinite; /* 2.5s é mais rápido e mais natural */
+  animation: shimmer 2.5s linear infinite;
 }
 
-/* Animação do reflexo (Vai e vem) */
+/* Animação do reflexo (vai e vem) */
 @keyframes shimmer {
-    0% { background-position: 200% center; }
-    100% { background-position: -200% center; }
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
 }
 
 /* Cores do handle por tipo */
@@ -225,7 +195,6 @@ body {
   text-align: center;
   padding: 10px;
 }
-
 .back-button {
   margin-top: auto;
   padding: 12px 10px 22px;
@@ -236,7 +205,7 @@ body {
   cursor: pointer;
 }
 
-/* acessibilidade: reduz animação se usuário preferir */
+/* Acessibilidade: reduz animação se o usuário preferir */
 @media (prefers-reduced-motion: reduce) {
   .slide-text { animation: none; background-size: 100% 100%; }
 }
