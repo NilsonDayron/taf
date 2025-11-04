@@ -1,17 +1,18 @@
+// script.js — TAF com slider estável (CORRIGIDO) + percurso em canvas
 document.addEventListener('DOMContentLoaded', () => {
-  // ===== Constantes TAF =====
-  const TIME_LIMIT_SECONDS = 12 * 60; // 12 min
-  const DISTANCE_GOAL_METERS = 2400;
+  // ===== Constantes do TAF =====
+  const TIME_LIMIT_SECONDS = 12 * 60;     // 12 min
+  const DISTANCE_GOAL_METERS = 2400;      // não usado ainda (futuro)
 
   // ===== Filtro anti-ruído do GPS =====
-  const GPS_MIN_ACCURACY_M = 25;  // ignora fixes com precisão pior que 25 m
-  const GPS_MIN_STEP_M     = 3;   // ignora "tremidinha" < 3 m
-  const GPS_MAX_JUMP_M     = 80;  // ignora saltos > 80 m entre leituras
-  const GPS_MAX_SPEED_MPS  = 8;   // ignora se velocidade > 8 m/s (~28,8 km/h)
-  let lastFixTs = 0;              // timestamp (ms) do último fix aceito
+  const GPS_MIN_ACCURACY_M = 25;          // rejeita fixes com precisão pior que 25 m
+  const GPS_MIN_STEP_M     = 3;           // passo mínimo “fixo” (anti-jitter)
+  const GPS_MAX_JUMP_M     = 80;          // rejeita saltos > 80 m
+  const GPS_MAX_SPEED_MPS  = 8;           // rejeita velocidade > 8 m/s (~28,8 km/h)
+  let   lastFixTs = 0;                    // timestamp (ms) do último fix aceito
 
   // ===== Estado =====
-  let appState = 'ready'; // 'ready' | 'running' | 'paused'
+  let appState = 'ready';                 // 'ready' | 'running' | 'paused'
   let timerInterval = null;
   let timerStartTime = 0;
   let accumulatedTimeMs = 0;
@@ -41,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const trackCanvas = document.getElementById('track-canvas');
   const metersLabel = document.getElementById('meters-label');
   let tctx = null;
-  let trackPoints = [];              // [{lat, lon}]
+  let trackPoints = [];                   // [{lat, lon}]
   let canvasDPR = 1;
 
   // ===== Navegação =====
@@ -52,19 +53,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (btnHomem) btnHomem.addEventListener('click', () => showPage('page-main'));
   if (btnMulher) btnMulher.addEventListener('click', () => showPage('page-main'));
-  if (btnBack)   btnBack.addEventListener('click', () => showPage('page-main'));
+  if (btnBack)   btnBack.addEventListener('click',   () => showPage('page-main'));
 
-  // ===== Estado dos botões =====
+  // ===== Estado dos botões (mostra/esconde sliders) =====
   function updateButtonState(state) {
     appState = state;
     [btnStart, btnPause, btnContinue, btnRestart, btnDetails].forEach(b => b && (b.style.display = 'none'));
-
-    if (state === 'ready')   btnStart && (btnStart.style.display   = 'flex');
-    if (state === 'running') {
-      btnPause  && (btnPause.style.display  = 'flex');
-      btnRestart&& (btnRestart.style.display= 'flex');
-    }
-    if (state === 'paused')  {
+    if (state === 'ready') {
+      btnStart && (btnStart.style.display = 'flex');
+    } else if (state === 'running') {
+      btnPause   && (btnPause.style.display   = 'flex');
+      btnRestart && (btnRestart.style.display = 'flex');
+    } else if (state === 'paused') {
       btnContinue && (btnContinue.style.display = 'flex');
       btnRestart  && (btnRestart.style.display  = 'flex');
       btnDetails  && (btnDetails.style.display  = 'flex');
@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ===== Cronômetro =====
   function startTimer() {
     timerStartTime = Date.now();
+    clearInterval(timerInterval);
     timerInterval = setInterval(updateTimer, 100);
     updateButtonState('running');
     requestWakeLock();
@@ -138,7 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     gpsWatchId = navigator.geolocation.watchPosition(
-      onGpsSuccess, onGpsError,
+      onGpsSuccess,
+      onGpsError,
       { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
     );
   }
@@ -146,9 +148,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function stopGpsTracking() {
     if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
     gpsWatchId = null;
-    lastPosition = null;
+    // NÃO zera lastPosition aqui (mantém âncora até restart)
   }
 
+  // —— GPS com filtro anti-ruído e velocidade derivada ——
   function onGpsSuccess(position) {
     const c = position && position.coords ? position.coords : {};
     const latitude  = c.latitude;
@@ -160,11 +163,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isFinite(latitude) || !isFinite(longitude)) return;
 
     // 1) descarta leituras muito imprecisas
-    if (accuracy !== null && accuracy > GPS_MIN_ACCURACY_M) {
-      return;
-    }
+    if (accuracy !== null && accuracy > GPS_MIN_ACCURACY_M) return;
 
-    // 2) primeira leitura
+    // 2) primeira leitura: só ancora (não soma distância)
     if (!lastPosition) {
       lastPosition = { latitude, longitude };
       lastFixTs = ts;
@@ -174,33 +175,31 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 3) calcula passo e Δt
+    // 3) passo e Δt
     const step = haversineDistance(
       lastPosition.latitude, lastPosition.longitude, latitude, longitude
     );
     const dtMs = Math.max(0, ts - lastFixTs);
-    const dt   = dtMs / 1000; // segundos
+    const dt   = dtMs / 1000;
 
-    // 4) jitter muito pequeno
-    if (step < GPS_MIN_STEP_M) {
-      lastPosition = { latitude, longitude };
-      lastFixTs = ts;
-      return;
-    }
+    // 4) limiar dinâmico baseado na precisão do FIX atual
+    //    (evita “andar” parado): ex.: acc=10m -> dynamicMin ~6m
+    const dynamicMin = accuracy != null
+      ? Math.max(GPS_MIN_STEP_M, accuracy * 0.6)
+      : GPS_MIN_STEP_M;
+
+    // Se o passo for menor que o limiar, IGNORA TOTALMENTE (sem mover âncora)
+    if (step < dynamicMin) return;
 
     // 5) corta saltos absurdos
     if (step > GPS_MAX_JUMP_M) return;
 
-    // 6) escolhe velocidade a usar (GPS se disponível, senão derivada)
+    // 6) velocidade: usa a do GPS ou deriva (step/dt)
     let speedToCheck = gpsSpeed;
     if ((speedToCheck === null || !isFinite(speedToCheck)) && dt > 0) {
       speedToCheck = step / dt; // m/s
     }
-
-    if (isFinite(speedToCheck) && speedToCheck > GPS_MAX_SPEED_MPS) {
-      // velocidade irreal para corrida -> ignora
-      return;
-    }
+    if (isFinite(speedToCheck) && speedToCheck > GPS_MAX_SPEED_MPS) return;
 
     // 7) aceita fix
     distanceMeters += step;
@@ -260,6 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (trackPoints.length < 2) return;
 
+    // bounds geográficos
     let minLat = Infinity, maxLat = -Infinity, minLon = Infinity, maxLon = -Infinity;
     for (const p of trackPoints){
       if (p.lat < minLat) minLat = p.lat;
@@ -277,10 +277,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const toXY = (lat, lon) => {
       const x = pad + (lon - minLon) * s;
-      const y = h - pad - (lat - minLat) * s;
+      const y = h - pad - (lat - minLat) * s; // Y “sobe”
       return {x, y};
     };
 
+    // trilha
     tctx.lineWidth = 3;
     tctx.lineJoin = 'round';
     tctx.lineCap  = 'round';
@@ -294,6 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     tctx.stroke();
 
+    // ponto atual
     const last = trackPoints[trackPoints.length - 1];
     const plast = toXY(last.lat, last.lon);
     tctx.fillStyle = '#ef4444';
@@ -308,14 +310,25 @@ document.addEventListener('DOMContentLoaded', () => {
     metersLabel.textContent = m < 1000 ? `${m} m` : `${(m/1000).toFixed(2)} km`;
   }
 
-  // ===== Sliders =====
+  // ===== Sliders (drag estável no iPhone) =====
+  // ***** INÍCIO DA CORREÇÃO *****
+  // Esta função foi reescrita para usar 'pointer events' de forma mais robusta,
+  // que funcionam para mouse E touch, e anexam os eventos de 'move' e 'up'
+  // à 'window' para que o deslize não pare se o dedo sair do botão.
+
   function initSliders(){
     document.querySelectorAll('.control-button').forEach(attachSliderBehavior);
   }
-
-  function attachSliderBehavior(slider){
+  
+  function attachSliderBehavior(slider) {
     const handle = slider.querySelector('.slide-handle');
-    const label  = slider.querySelector('.slide-text');
+    const label = slider.querySelector('.slide-text');
+    if (!handle) return;
+
+    // Estilos para performance e para evitar conflito com o navegador
+    slider.style.touchAction = 'none';
+    handle.style.touchAction = 'none';
+    handle.style.willChange = 'transform';
 
     const PADDING = 4;
     const HANDLE_W = 48;
@@ -323,77 +336,85 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let dragging = false;
     let startX = 0;
-    let baseX  = 0;
-    let x = 0;
+    let currentX = 0;
 
-    const setX = v => { x = v; handle.style.transform = `translate3d(${x}px,0,0)`; };
-
-    const onPointerDown = e => {
-      if (e.pointerType === 'mouse' && e.button !== 0) return;
-      dragging = true;
-      slider.classList.add('dragging');
-      handle.style.transition = 'none';
-      slider.setPointerCapture(e.pointerId);
-      startX = e.clientX;
-      baseX  = x;
-      e.preventDefault();
+    const setX = (x) => {
+      handle.style.transform = `translate3d(${x}px, 0, 0)`;
     };
-
-    const onPointerMove = e => {
+    
+    // Função unificada para Mover
+    const onPointerMove = (e) => {
       if (!dragging) return;
-      e.preventDefault();
-      const delta = e.clientX - startX;
-      let next = baseX + delta;
-      if (next < 0) next = 0;
-      const max = MAX_X();
-      if (next > max) next = max;
-      setX(next);
-      const pct = max === 0 ? 0 : next / max;
-      if (label) label.style.opacity = String(0.9 + 0.1 * (1 - pct));
+      e.preventDefault(); // Impede o navegador de rolar
+      
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      let delta = clientX - startX;
+      let nextX = delta;
+
+      // Limita o movimento
+      if (nextX < 0) nextX = 0;
+      const maxX = MAX_X();
+      if (nextX > maxX) nextX = maxX;
+
+      currentX = nextX;
+      setX(currentX);
     };
 
-    const snapTo = (pos, cb) => {
-      handle.style.transition = 'transform .14s cubic-bezier(.2,.8,.2,1)';
-      setX(pos);
-      const once = () => {
-        handle.style.transition = 'none';
-        if (cb) cb();
-        handle.removeEventListener('transitionend', once);
-      };
-      handle.addEventListener('transitionend', once);
-    };
-
-    const onPointerUpOrCancel = e => {
+    // Função unificada para Soltar
+    const onPointerUp = () => {
       if (!dragging) return;
       dragging = false;
-      slider.classList.remove('dragging');
-      try { slider.releasePointerCapture(e.pointerId); } catch(_) {}
 
-      const max = MAX_X();
-      const pct = max === 0 ? 0 : x / max;
+      window.removeEventListener('mousemove', onPointerMove);
+      window.removeEventListener('mouseup', onPointerUp);
+      window.removeEventListener('touchmove', onPointerMove);
+      window.removeEventListener('touchend', onPointerUp);
 
-      if (pct >= 0.9) {
+      handle.style.transition = 'transform .14s cubic-bezier(.2,.8,.2,1)';
+      
+      const maxX = MAX_X();
+      const pct = maxX === 0 ? 0 : currentX / maxX;
+
+      if (pct >= 0.9) { // Se deslizou > 90%
         triggerAction(slider.dataset.btn);
-        snapTo(max, () => snapTo(0));
+        // Reseta o botão visualmente
+        setTimeout(() => {
+            handle.style.transition = 'none';
+            setX(0);
+        }, 200); // Espera a ação terminar
       } else {
-        snapTo(0);
+        // Falhou, volta ao início
+        setX(0);
       }
-      if (label) label.style.opacity = '1';
     };
 
-    slider.addEventListener('pointerdown', onPointerDown);
-    slider.addEventListener('pointermove', onPointerMove);
-    slider.addEventListener('pointerup', onPointerUpOrCancel);
-    slider.addEventListener('pointercancel', onPointerUpOrCancel);
+    // Função unificada para Iniciar
+    const onPointerDown = (e) => {
+      dragging = true;
+      startX = e.touches ? e.touches[0].clientX : e.clientX;
+      currentX = 0; // Começa do 0
+      handle.style.transition = 'none'; // Remove transição para o deslize
 
+      // Anexa os listeners GLOBAIS
+      window.addEventListener('mousemove', onPointerMove, { passive: false });
+      window.addEventListener('mouseup', onPointerUp, { passive: false });
+      window.addEventListener('touchmove', onPointerMove, { passive: false });
+      window.addEventListener('touchend', onPointerUp, { passive: false });
+    };
+
+    // Anexa o listener de "início" ao próprio slider
+    slider.addEventListener('mousedown', onPointerDown, { passive: true });
+    slider.addEventListener('touchstart', onPointerDown, { passive: true });
+
+    // API interna para resetar (usada no 'restartTimer')
     slider._reset = () => {
-      dragging = false; x = 0;
+      currentX = 0;
       handle.style.transition = 'none';
       setX(0);
-      if (label) label.style.opacity = '1';
-      slider.classList.remove('dragging');
     };
   }
+  // ***** FIM DA CORREÇÃO *****
+
 
   function resetSlider(slider){ slider?._reset && slider._reset(); }
   function resetAllSliders(){ document.querySelectorAll('.control-button').forEach(resetSlider); }
